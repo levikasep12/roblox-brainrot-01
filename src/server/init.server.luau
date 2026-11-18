@@ -16,7 +16,7 @@ local Steal = require(script.Steal)
 local Events = require(script.Events)
 local WorldBuilder = require(script.WorldBuilder)
 
-local remotesFolder = Remotes.init()
+Remotes.init()
 local stateSync = Remotes.get("StateSync")
 local showToast = Remotes.get("ShowToast")
 local celebrate = Remotes.get("Celebrate")
