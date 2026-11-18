@@ -38,7 +38,7 @@ Config.Conveyor = {
 Config.Economy = {
 	startingMoney = 60,
 	incomeTickSeconds = 1,
-	rebirthBaseCost = 2500,
+	rebirthBaseCost = 1200,
 	rebirthCostGrowth = 3.4,
 	rebirthBonus = 0.75,
 	lockCost = 300,
@@ -48,8 +48,8 @@ Config.Economy = {
 }
 
 Config.Wave = {
-	firstCalmSeconds = 28,
-	calmSeconds = 34,
+	firstCalmSeconds = 22,
+	calmSeconds = 26,
 	warningSeconds = 12,
 	sweepSeconds = 10,
 	doubleSeconds = 20,

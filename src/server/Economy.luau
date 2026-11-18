@@ -1,7 +1,7 @@
 -- Income ticking and the rebirth ladder. Reads and writes money only through Store,
 -- so the HUD, shop and rebirth all agree on one number.
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 
 local Store = require(script.Parent.Store)
 local Bases = require(script.Parent.Bases)
@@ -13,7 +13,7 @@ function Economy.startIncomeLoop()
 		while true do
 			task.wait(Store.Config.Economy.incomeTickSeconds)
 			local waveRunning = Store.isWaveDouble()
-			for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+			for _, player in ipairs(Players:GetPlayers()) do
 				local record = Store.players[player.UserId]
 				if record and record.plotIndex then
 					local perSecond = Store.incomePerSecond(player)
