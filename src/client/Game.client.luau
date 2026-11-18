@@ -1,88 +1,192 @@
--- A square that moves with the arrow keys inside a grey box.
+-- Client entrypoint. Renders the HUD from the server's state snapshot, wires the
+-- buttons and keys, and asks the server for every action (it never changes state).
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local Config = require(ReplicatedStorage.Shared.Config)
+local Remotes = require(ReplicatedStorage.Shared.Remotes)
+local Feedback = require(ReplicatedStorage.Shared.Feedback)
+
+local HUD = require(script.Parent.HUD)
 
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
-local ARENA_WIDTH = 640
-local ARENA_HEIGHT = 480
-local SQUARE_SIZE = 48
-local SPEED = 320 -- pixels per second
+local hud = HUD.create(player)
+hud.displayedMoney = 0
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "GameGui"
-gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
+local stateSync = Remotes.get("StateSync")
+local showToast = Remotes.get("ShowToast")
+local celebrate = Remotes.get("Celebrate")
+local buyRemote = Remotes.get("BuyBrainrot")
+local rebirthRemote = Remotes.get("Rebirth")
+local lockRemote = Remotes.get("ToggleLock")
+local buyResult = Remotes.get("BuyResult")
 
-local background = Instance.new("Frame")
-background.Name = "Background"
-background.Size = UDim2.fromScale(1, 1)
-background.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-background.BorderSizePixel = 0
-background.Parent = gui
+local latestState = nil
+local hudBuiltShop = false
 
-local title = Instance.new("TextLabel")
-title.Name = "Hint"
-title.AnchorPoint = Vector2.new(0.5, 0)
-title.Position = UDim2.new(0.5, 0, 0.5, -ARENA_HEIGHT / 2 - 56)
-title.Size = UDim2.fromOffset(ARENA_WIDTH, 40)
-title.BackgroundTransparency = 1
-title.Text = "Use the arrow keys to move the square"
-title.TextColor3 = Color3.fromRGB(230, 230, 230)
-title.TextSize = 24
-title.Font = Enum.Font.SourceSans
-title.Parent = background
+-- The banner follows the wave phase:
+--   warning  -> stays up (gameplay-critical)
+--   sweeping -> stays up (gameplay-critical)
+--   double   -> shown once for 2.5s only; the x2 badge carries the state afterwards
+--   calm     -> hidden
+local lastWavePhase = "calm"
 
-local arena = Instance.new("Frame")
-arena.Name = "Arena"
-arena.AnchorPoint = Vector2.new(0.5, 0.5)
-arena.Position = UDim2.fromScale(0.5, 0.5)
-arena.Size = UDim2.fromOffset(ARENA_WIDTH, ARENA_HEIGHT)
-arena.BackgroundColor3 = Color3.fromRGB(110, 110, 110)
-arena.BorderColor3 = Color3.fromRGB(30, 30, 30)
-arena.BorderSizePixel = 2
-arena.Parent = background
-
-local square = Instance.new("Frame")
-square.Name = "Square"
-square.Size = UDim2.fromOffset(SQUARE_SIZE, SQUARE_SIZE)
-square.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-square.BorderColor3 = Color3.fromRGB(30, 30, 30)
-square.BorderSizePixel = 2
-square.Parent = arena
-
--- The square's top-left corner inside the arena, starting in the middle.
-local x = (ARENA_WIDTH - SQUARE_SIZE) / 2
-local y = (ARENA_HEIGHT - SQUARE_SIZE) / 2
-
-local function place()
-	square.Position = UDim2.fromOffset(math.floor(x + 0.5), math.floor(y + 0.5))
+local function renderBanner(state)
+	local wave = state.wave
+	local phase = wave.phase
+	if phase == "warning" then
+		HUD.setBanner(hud, string.format("HAZARD WAVE IN %ds - GET HOME", wave.secondsLeft), Color3.fromRGB(255, 196, 80), true)
+	elseif phase == "sweeping" then
+		HUD.setBanner(hud, "WAVE SWEEPING - DASH HOME NOW", Color3.fromRGB(255, 92, 108), true)
+	elseif phase == "double" then
+		if lastWavePhase ~= "double" then
+			HUD.setBanner(hud, "WAVE PASSED - INCOME x2", Color3.fromRGB(140, 232, 160), false)
+		end
+	else
+		HUD.setBanner(hud, nil)
+	end
+	lastWavePhase = phase
 end
 
-place()
-gui.Parent = player:WaitForChild("PlayerGui")
+local function applyState(state)
+	latestState = state
+	HUD.setMoney(hud, state.money)
+	HUD.setIncome(hud, state.income, state.multiplier, state.rebirths, state.incomeDouble)
+	renderBanner(state)
 
-RunService.RenderStepped:Connect(function(dt)
-	local dx = 0
-	local dy = 0
-	if UserInputService:IsKeyDown(Enum.KeyCode.Left) then
-		dx -= 1
+	if state.plot then
+		local lockText = state.plot.lockedSeconds > 0
+			and string.format("LOCKED %ds", state.plot.lockedSeconds)
+			or string.format("LOCK BASE $%d", Config.Economy.lockCost)
+		hud.lockButton.Text = lockText
+		if state.plot.lockedSeconds > 0 then
+			hud.lockButton.BackgroundColor3 = Color3.fromRGB(70, 110, 160)
+		else
+			hud.lockButton.BackgroundColor3 = Color3.fromRGB(112, 196, 255)
+		end
 	end
-	if UserInputService:IsKeyDown(Enum.KeyCode.Right) then
-		dx += 1
+	if state.rebirthCost then
+		hud.rebirthButton.Text = string.format("REBIRTH $%d [R]", state.rebirthCost)
 	end
-	if UserInputService:IsKeyDown(Enum.KeyCode.Up) then
-		dy -= 1
+
+	if state.shop and not hudBuiltShop then
+		hudBuiltShop = true
+		HUD.buildShop(hud, state.shop)
+		local list = hud.shopList
+		for _, def in ipairs(state.shop) do
+			local row = list:FindFirstChild(def.id)
+			local buy = row and row:FindFirstChild("Buy_" .. def.id)
+			if buy then
+				buy.Activated:Connect(function()
+					buyRemote:FireServer(def.id)
+				end)
+			end
+		end
 	end
-	if UserInputService:IsKeyDown(Enum.KeyCode.Down) then
-		dy += 1
+end
+
+stateSync.OnClientEvent:Connect(applyState)
+
+showToast.OnClientEvent:Connect(function(payload)
+	HUD.addToast(hud, payload.text, payload.tone)
+end)
+
+celebrate.OnClientEvent:Connect(function(payload)
+	Feedback.play(payload.kind, nil)
+	HUD.addToast(hud, payload.text, "celebrate")
+end)
+
+buyResult.OnClientEvent:Connect(function(payload)
+	if payload.ok then
+		Feedback.play("buy", nil)
+	else
+		HUD.addToast(hud, payload.message, "danger")
 	end
-	if dx == 0 and dy == 0 then
+end)
+
+-- Shop open/close.
+local shopOpen = false
+local function setShopOpen(open)
+	shopOpen = open
+	hud.shop.Visible = open
+end
+hud.shopButton.Activated:Connect(function()
+	setShopOpen(not shopOpen)
+end)
+hud.closeShop.Activated:Connect(function()
+	setShopOpen(false)
+end)
+
+hud.rebirthButton.Activated:Connect(function()
+	rebirthRemote:FireServer()
+end)
+hud.lockButton.Activated:Connect(function()
+	lockRemote:FireServer()
+end)
+
+-- Keys bound through ContextActionService so the default camera scripts cannot eat
+-- them (Roblox's camera eats arrow keys via InputBegan with gameProcessedEvent).
+local function onAction(actionName)
+	if actionName == "BrainrotRebirth" then
+		rebirthRemote:FireServer()
+	elseif actionName == "BrainrotLock" then
+		lockRemote:FireServer()
+	elseif actionName == "BrainrotShop" then
+		setShopOpen(not shopOpen)
+	end
+	return Enum.ContextActionResult.Sink
+end
+
+ContextActionService:BindAction("BrainrotRebirth", onAction, false, Config.Keys.rebirth)
+ContextActionService:BindAction("BrainrotLock", onAction, false, Config.Keys.lock)
+ContextActionService:BindAction("BrainrotShop", onAction, false, Config.Keys.buy)
+
+-- Highlight the nearest runway brainrot so the grab target reads clearly in 3D.
+local highlight = Instance.new("Highlight")
+highlight.Name = "RunwayHighlight"
+highlight.FillColor = Color3.fromRGB(255, 224, 120)
+highlight.FillTransparency = 0.75
+highlight.OutlineColor = Color3.fromRGB(255, 236, 160)
+highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+
+local function updateHighlight()
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	local arena = workspace:FindFirstChild("Arena")
+	if not root or not arena then
+		highlight.Adornee = nil
 		return
 	end
-	x = math.clamp(x + dx * SPEED * dt, 0, ARENA_WIDTH - SQUARE_SIZE)
-	y = math.clamp(y + dy * SPEED * dt, 0, ARENA_HEIGHT - SQUARE_SIZE)
-	place()
+	local best, bestDistance = nil, Config.Conveyor.buyDistance
+	for _, model in ipairs(arena:GetChildren()) do
+		if model:IsA("Model") and model.Name:sub(1, 7) == "Runway_" then
+			local body = model.PrimaryPart
+			if body then
+				local distance = (body.Position - root.Position).Magnitude
+				if distance < bestDistance then
+					best, bestDistance = model, distance
+				end
+			end
+		end
+	end
+	highlight.Adornee = best
+end
+
+task.spawn(function()
+	while true do
+		task.wait(0.2)
+		updateHighlight()
+	end
+end)
+
+player.CharacterAdded:Connect(function()
+	task.delay(0.5, function()
+		hud.displayedMoney = 0
+	end)
 end)

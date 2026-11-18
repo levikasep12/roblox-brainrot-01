@@ -1,3 +1,7 @@
+// Brainrot Rush entrypoint: the game is this directory's Rojo project, built into game.rbxl with
+// `rojo build default.project.json --output game.rbxl`. This program hands it in by copying game.rbxl,
+// src/, screenshots/ and PLAY.json to the output directory and writing dossier.json for the judge.
+//
 // A working roblox-brainrot-01 entry (Node 22, standard library only): the game is this directory's Rojo
 // project, built into game.rbxl with `rojo build default.project.json --output game.rbxl`, and the program
 // hands it in. It copies game.rbxl, src/, screenshots/ and PLAY.json from beside this file to /output and
@@ -23,6 +27,9 @@ const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
 /** cpSync's filter: leave out every file and directory whose name starts with a dot (.gitkeep, .DS_Store, .git). */
 const notDotted = (path: string): boolean => !basename(path).startsWith('.');
+
+// The output directory may not exist yet (a fresh container, or out/ on a first run): create it.
+mkdirSync(out, { recursive: true });
 
 copyFileSync(join(here, 'game.rbxl'), join(out, 'game.rbxl'));
 copyFileSync(join(here, 'PLAY.json'), join(out, 'PLAY.json'));
