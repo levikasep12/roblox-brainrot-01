@@ -183,11 +183,6 @@ function Events.stepHazard(dt: number)
 			hazard.startedAt = now
 			hazard.nextAt = now + GameConfig.Hazard.interval
 			setWaveVisible(false)
-			for _, profile in ipairs(Store.allPlayers()) do
-				if notify then
-					notify(profile.userId, "Wave passed. Income x2 while you sit at your base!", "good")
-				end
-			end
 		end
 		return
 	end

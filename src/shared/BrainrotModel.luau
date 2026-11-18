@@ -363,9 +363,9 @@ function BrainrotModel.addLabel(model: Model, def, mutationId: string): Billboar
 
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = "Label"
-	billboard.Size = UDim2.fromOffset(230, 68)
+	billboard.Size = UDim2.fromOffset(150, 46)
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, BrainrotModel.labelOffsetY(model), 0)
-	billboard.AlwaysOnTop = true
+	billboard.AlwaysOnTop = false
 	billboard.MaxDistance = 160
 	billboard.LightInfluence = 0
 	billboard.Adornee = model.PrimaryPart
@@ -379,22 +379,22 @@ function BrainrotModel.addLabel(model: Model, def, mutationId: string): Billboar
 	card.BorderSizePixel = 0
 	card.Parent = billboard
 	local cardCorner = Instance.new("UICorner")
-	cardCorner.CornerRadius = UDim.new(0, 10)
+	cardCorner.CornerRadius = UDim.new(0, 7)
 	cardCorner.Parent = card
 	local cardStroke = Instance.new("UIStroke")
 	cardStroke.Color = rarityColor
-	cardStroke.Thickness = 2
+	cardStroke.Thickness = 1
 	cardStroke.Transparency = 0.1
 	cardStroke.Parent = card
 
 	local nameLabel = Instance.new("TextLabel")
 	nameLabel.Name = "Name"
-	nameLabel.Position = UDim2.new(0, 8, 0, 4)
-	nameLabel.Size = UDim2.new(1, -16, 0, 26)
+	nameLabel.Position = UDim2.new(0, 6, 0, 2)
+	nameLabel.Size = UDim2.new(1, -12, 0, 18)
 	nameLabel.BackgroundTransparency = 1
 	nameLabel.Text = BrainrotDefs.displayName(def, mutationId)
 	nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	nameLabel.TextSize = 17
+	nameLabel.TextSize = 12
 	nameLabel.Font = Enum.Font.GothamBold
 	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -402,24 +402,24 @@ function BrainrotModel.addLabel(model: Model, def, mutationId: string): Billboar
 
 	local rarityLabel = Instance.new("TextLabel")
 	rarityLabel.Name = "Rarity"
-	rarityLabel.Position = UDim2.new(0, 8, 0, 30)
-	rarityLabel.Size = UDim2.new(0.55, 0, 0, 18)
+	rarityLabel.Position = UDim2.new(0, 6, 0, 20)
+	rarityLabel.Size = UDim2.new(0.5, 0, 0, 13)
 	rarityLabel.BackgroundTransparency = 1
 	rarityLabel.Text = string.upper(def.rarity)
 	rarityLabel.TextColor3 = rarityColor
-	rarityLabel.TextSize = 13
+	rarityLabel.TextSize = 10
 	rarityLabel.Font = Enum.Font.GothamBold
 	rarityLabel.TextXAlignment = Enum.TextXAlignment.Left
 	rarityLabel.Parent = card
 
 	local rateLabel = Instance.new("TextLabel")
 	rateLabel.Name = "Rate"
-	rateLabel.Position = UDim2.new(0.5, 0, 0, 28)
-	rateLabel.Size = UDim2.new(0.5, -8, 0, 20)
+	rateLabel.Position = UDim2.new(0.5, 0, 0, 20)
+	rateLabel.Size = UDim2.new(0.5, -6, 0, 13)
 	rateLabel.BackgroundTransparency = 1
 	rateLabel.Text = Format.rate(BrainrotDefs.rateFor(def, mutationId))
 	rateLabel.TextColor3 = Color3.fromRGB(120, 240, 156)
-	rateLabel.TextSize = 15
+	rateLabel.TextSize = 10
 	rateLabel.Font = Enum.Font.GothamBold
 	rateLabel.TextXAlignment = Enum.TextXAlignment.Right
 	rateLabel.Parent = card
@@ -427,12 +427,12 @@ function BrainrotModel.addLabel(model: Model, def, mutationId: string): Billboar
 	if mutation.label ~= "" then
 		local mutationLabel = Instance.new("TextLabel")
 		mutationLabel.Name = "Mutation"
-		mutationLabel.Position = UDim2.new(0, 8, 0, 50)
-		mutationLabel.Size = UDim2.new(1, -16, 0, 14)
+		mutationLabel.Position = UDim2.new(0, 6, 0, 33)
+		mutationLabel.Size = UDim2.new(1, -12, 0, 11)
 		mutationLabel.BackgroundTransparency = 1
 		mutationLabel.Text = mutation.label .. " MUTATION"
 		mutationLabel.TextColor3 = mutation.color
-		mutationLabel.TextSize = 11
+		mutationLabel.TextSize = 9
 		mutationLabel.Font = Enum.Font.GothamBold
 		mutationLabel.TextXAlignment = Enum.TextXAlignment.Left
 		mutationLabel.Parent = card

@@ -20,6 +20,10 @@ local displayedMoney = 0
 local targetMoney = 0
 local moneyPulse = 0
 
+local COOLDOWN_NOTICE_SECONDS = 2.5
+local lastHazardPhase = ""
+local cooldownNoticeUntil = 0
+
 function Hud.build(playerGui: PlayerGui)
 	root = Instance.new("ScreenGui")
 	root.Name = "BrainrotHud"
@@ -43,8 +47,13 @@ function Hud.build(playerGui: PlayerGui)
 	local moneyLabel = UiKit.label(statusCard, "Money", "$0", UDim2.new(1, -24, 0, 42), UDim2.fromOffset(14, 34), 34, theme.money)
 	widgets.money = moneyLabel
 
-	local incomeLabel = UiKit.label(statusCard, "Income", "+$0/s", UDim2.new(0.55, 0, 0, 20), UDim2.fromOffset(14, 79), 15, theme.good)
+	local incomeLabel = UiKit.label(statusCard, "Income", "+$0/s", UDim2.new(0.36, 0, 0, 20), UDim2.fromOffset(14, 79), 15, theme.good)
 	widgets.income = incomeLabel
+
+	local boostBadge = UiKit.label(statusCard, "HazardBoost", "x2", UDim2.fromOffset(40, 20), UDim2.fromOffset(124, 79), 12, theme.good)
+	boostBadge.TextXAlignment = Enum.TextXAlignment.Left
+	boostBadge.Visible = false
+	widgets.hazardBoost = boostBadge
 
 	local multiplierLabel = UiKit.label(statusCard, "Multiplier", "x1.00", UDim2.new(0.45, -14, 0, 20), UDim2.new(0.55, 0, 0, 79), 15, theme.warn)
 	multiplierLabel.TextXAlignment = Enum.TextXAlignment.Right
@@ -100,7 +109,7 @@ function Hud.build(playerGui: PlayerGui)
 	hazardBanner.Name = "HazardBanner"
 	hazardBanner.AnchorPoint = Vector2.new(0.5, 0)
 	hazardBanner.Position = UDim2.new(0.5, 0, 0, 14)
-	hazardBanner.Size = UDim2.fromOffset(460, 46)
+	hazardBanner.Size = UDim2.fromOffset(380, 36)
 	hazardBanner.BackgroundColor3 = Color3.fromRGB(96, 30, 48)
 	hazardBanner.BackgroundTransparency = 0
 	hazardBanner.BorderSizePixel = 0
@@ -108,7 +117,7 @@ function Hud.build(playerGui: PlayerGui)
 	hazardBanner.Parent = root
 	UiKit.corner(hazardBanner, 12)
 	UiKit.stroke(hazardBanner, theme.bad, 2)
-	local hazardLabel = UiKit.label(hazardBanner, "HazardText", "HAZARD WAVE", UDim2.new(1, -24, 1, 0), UDim2.fromOffset(12, 0), 17, Color3.fromRGB(255, 230, 236))
+	local hazardLabel = UiKit.label(hazardBanner, "HazardText", "HAZARD WAVE", UDim2.new(1, -24, 1, 0), UDim2.fromOffset(12, 0), 13, Color3.fromRGB(255, 230, 236))
 	hazardLabel.TextXAlignment = Enum.TextXAlignment.Center
 	widgets.hazardBanner = hazardBanner
 	widgets.hazardText = hazardLabel
@@ -220,6 +229,12 @@ end
 
 function Hud.setHazard(phase: string, secondsLeft: number)
 	local banner = widgets.hazardBanner
+	if phase ~= lastHazardPhase then
+		lastHazardPhase = phase
+		if phase == "cooldown" then
+			cooldownNoticeUntil = os.clock() + COOLDOWN_NOTICE_SECONDS
+		end
+	end
 	if phase == "warning" then
 		banner.Visible = true
 		widgets.hazardText.Text = string.format("HAZARD WAVE IN %.1fs - GET HOME", secondsLeft)
@@ -228,13 +243,14 @@ function Hud.setHazard(phase: string, secondsLeft: number)
 		banner.Visible = true
 		widgets.hazardText.Text = "WAVE SWEEPING - DASH HOME NOW"
 		banner.BackgroundColor3 = Color3.fromRGB(150, 40, 62)
-	elseif phase == "cooldown" then
+	elseif phase == "cooldown" and os.clock() < cooldownNoticeUntil then
 		banner.Visible = true
 		widgets.hazardText.Text = "WAVE PASSED - INCOME x2"
 		banner.BackgroundColor3 = Color3.fromRGB(36, 96, 74)
 	else
 		banner.Visible = false
 	end
+	widgets.hazardBoost.Visible = phase == "cooldown"
 end
 
 function Hud.toast(message: string, tone: string)
