@@ -403,6 +403,25 @@ function BrainrotModel.Build(def, mutation, cframe, rateOverride)
 	return model, rate
 end
 
+-- Removes the price strip a conveyor offer carries, so a bought brainrot that
+-- now lives on a base no longer advertises a cost.
+function BrainrotModel.ClearLabelPrice(model)
+	local root = model.PrimaryPart
+	local label = root and root:FindFirstChild("Label")
+	local card = label and label:FindFirstChild("Card")
+	local grid = card and card:FindFirstChild("Grid")
+	local price = grid and grid:FindFirstChild("Price")
+	if price then
+		price:Destroy()
+	end
+	if card then
+		card.Size = UDim2.fromScale(1, 1)
+	end
+	if label then
+		label.Size = UDim2.fromOffset(230, 70)
+	end
+end
+
 function BrainrotModel.SetLabelRate(model, rate)
 	local root = model.PrimaryPart
 	local label = root and root:FindFirstChild("Label")

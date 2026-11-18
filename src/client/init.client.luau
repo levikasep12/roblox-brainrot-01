@@ -134,8 +134,12 @@ local function applySnapshot(snapshot)
 	if not snapshot then
 		return
 	end
+	local previous = latestSnapshot
 	latestSnapshot = snapshot
 
+	if previous and snapshot.money > previous.money + 0.01 then
+		hud.PulseMoney()
+	end
 	hud.SetMoney(snapshot.money)
 	hud.SetIncome(snapshot.income)
 	hud.SetMultiplier(snapshot.multiplier, snapshot.rebirths, snapshot.rebirthCost)

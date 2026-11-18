@@ -63,7 +63,7 @@ function Spawner.SpawnOffer(defId, mutation)
 	end
 
 	local rate = Economy.MutationRate(def, mutation)
-	local price = Economy.PriceFor(def, 1)
+	local price = Economy.PriceOf(def)
 	local startPoint = WorldBuilder.ConveyorPoint(0)
 	local frame = BrainrotModel.FacingCFrame(startPoint, Vector3.new(0, 0, 1))
 	local model = BrainrotModel.Build(def, mutation, frame, rate)

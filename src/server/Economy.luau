@@ -29,12 +29,10 @@ function Economy.TrySpend(record, amount)
 	return true
 end
 
--- Price scales a little with how many the player already owns so the ladder
--- takes longer near the top, and with their rebirth multiplier so rebirths
--- are not a shortcut around the price.
-function Economy.PriceFor(def, ownedCount)
-	local scale = 1 + math.max(0, ownedCount - 1) * 0.08
-	return math.floor(def.price * scale + 0.5)
+-- A brainrot's price is fixed by its definition, so the ladder on the belt is
+-- predictable and a player can always see what the next tier costs.
+function Economy.PriceOf(def)
+	return def.price
 end
 
 function Economy.MutationRate(def, mutation)

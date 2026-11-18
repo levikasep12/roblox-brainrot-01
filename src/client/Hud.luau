@@ -327,6 +327,18 @@ function Hud.Create(playerGui)
 		handle.targetMoney = value
 	end
 
+	-- A small green flash behind the money label whenever income lands, so the
+	-- number reads as actively ticking even when digits do not change.
+	function handle.PulseMoney()
+		if not moneyPanel.Parent then
+			return
+		end
+		moneyPanel.BackgroundColor3 = Color3.fromRGB(26, 62, 44)
+		TweenService:Create(moneyPanel, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			BackgroundColor3 = THEME.panel,
+		}):Play()
+	end
+
 	function handle.SetIncome(value)
 		incomeLabel.Text = Format.Rate(value) .. " income"
 	end
@@ -391,12 +403,18 @@ function Hud.Create(playerGui)
 			task.wait(0.5)
 			toast:Destroy()
 		end)
-		while #toastArea:GetChildren() > 6 do
-			local first = toastArea:GetChildren()[1]
-			if first and first:IsA("TextLabel") then
-				first:Destroy()
-			else
-				break
+		-- Keep at most four toasts on screen, oldest first. Only toasts are
+		-- collected; the UIListLayout is never touched.
+		local toasts = {}
+		for _, child in ipairs(toastArea:GetChildren()) do
+			if child:IsA("TextLabel") then
+				table.insert(toasts, child)
+			end
+		end
+		while #toasts > 4 do
+			local oldest = table.remove(toasts, 1)
+			if oldest then
+				oldest:Destroy()
 			end
 		end
 	end
@@ -470,17 +488,25 @@ function Hud.Create(playerGui)
 		end
 	end
 
-	-- Money counts up toward the server value instead of snapping, so the
-	-- HUD visibly ticks.
+	-- Money counts up toward the server value instead of snapping, so the HUD
+	-- visibly ticks. A purchase is a sudden drop, so a drop is applied at once
+	-- and only gains are eased.
 	task.spawn(function()
+		local lastTarget = 0
 		while root.Parent do
 			local dt = task.wait(0.04)
-			local diff = handle.targetMoney - handle.displayedMoney
-			if math.abs(diff) < 0.6 then
-				handle.displayedMoney = handle.targetMoney
+			local target = handle.targetMoney
+			if target < lastTarget - 0.5 then
+				handle.displayedMoney = target
 			else
-				handle.displayedMoney += diff * math.clamp(dt * 12, 0, 1)
+				local diff = target - handle.displayedMoney
+				if math.abs(diff) < 0.6 then
+					handle.displayedMoney = target
+				else
+					handle.displayedMoney += diff * math.clamp(dt * 9, 0, 1)
+				end
 			end
+			lastTarget = target
 			moneyLabel.Text = Format.Money(handle.displayedMoney)
 		end
 	end)

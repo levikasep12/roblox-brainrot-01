@@ -51,6 +51,14 @@ function BaseService.PlaceInSlot(plotIndex, slotIndex, def, mutation, rate, exis
 
 	local model = existingModel
 	if model then
+		-- Parent first so the flight plays inside the plot and the plot's
+		-- ChildAdded watcher sees it straight away.
+		model.Name = slotModelName(plotIndex, slotIndex)
+		model:SetAttribute("SlotIndex", slotIndex)
+		model:SetAttribute("PlotIndex", plotIndex)
+		if model.Parent ~= plot then
+			model.Parent = plot
+		end
 		local start = model:GetPivot()
 		local steps = 26
 		task.spawn(function()
@@ -67,26 +75,23 @@ function BaseService.PlaceInSlot(plotIndex, slotIndex, def, mutation, rate, exis
 			BaseService.SettleInSlot(model, plotIndex, slotIndex, def)
 		end)
 	else
-		local built = BrainrotModel.Build(def, mutation, frame, rate)
-		model = built
-		BaseService.SettleInSlot(model, plotIndex, slotIndex, def)
-	end
-
-	model.Name = slotModelName(plotIndex, slotIndex)
-	model:SetAttribute("SlotIndex", slotIndex)
-	model:SetAttribute("PlotIndex", plotIndex)
-	if model.Parent ~= plot then
+		model = BrainrotModel.Build(def, mutation, frame, rate)
+		model.Name = slotModelName(plotIndex, slotIndex)
+		model:SetAttribute("SlotIndex", slotIndex)
+		model:SetAttribute("PlotIndex", plotIndex)
 		model.Parent = plot
+		BaseService.SettleInSlot(model, plotIndex, slotIndex, def)
 	end
 
 	local rarityColor = BrainrotDefs.RarityColor[def.rarity] or Color3.fromRGB(255, 255, 255)
 	WorldBuilder.SetSlotGlow(plotIndex, slotIndex, rarityColor, 0.15)
+	BaseService.Burst(slotPos + Vector3.new(0, 3, 0), rarityColor, 24)
 	return model
 end
 
 -- Shared finishing step: snap to the pad, give it its prompts and light it.
 function BaseService.SettleInSlot(model, plotIndex, slotIndex, def)
-	if not model.Parent or not model.PrimaryPart then
+	if not model.PrimaryPart then
 		return
 	end
 	local slotPos = Config.SlotPosition(plotIndex, slotIndex)
@@ -94,6 +99,13 @@ function BaseService.SettleInSlot(model, plotIndex, slotIndex, def)
 	model:PivotTo(frame)
 
 	local root = model.PrimaryPart
+	-- The belt's buy prompt and price tag do not belong on a housed brainrot.
+	local buyPrompt = root:FindFirstChild("ClaimBrainrot")
+	if buyPrompt then
+		buyPrompt:Destroy()
+	end
+	BrainrotModel.ClearLabelPrice(model)
+
 	local prompt = root:FindFirstChild("InspectBrainrot")
 	if not prompt then
 		prompt = Instance.new("ProximityPrompt")
