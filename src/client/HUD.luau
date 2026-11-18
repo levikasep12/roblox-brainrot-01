@@ -73,7 +73,8 @@ function HUD.create(player)
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "BrainrotHUD"
 	gui.ResetOnSpawn = false
-	gui.IgnoreGuiInset = true
+	-- Respect the topbar inset so the hazard banner and money card are never hidden under it.
+	gui.IgnoreGuiInset = false
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -122,7 +123,7 @@ function HUD.create(player)
 	local banner = Instance.new("TextLabel")
 	banner.Name = "HazardBanner"
 	banner.AnchorPoint = Vector2.new(0.5, 0)
-	banner.Position = UDim2.new(0.5, 0, 0, 16)
+	banner.Position = UDim2.new(0.5, 0, 0, 12)
 	banner.Size = UDim2.fromOffset(380, 36)
 	banner.BackgroundColor3 = Color3.fromRGB(32, 20, 30)
 	banner.BackgroundTransparency = 0.1

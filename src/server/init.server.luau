@@ -64,8 +64,12 @@ local function onCharacter(player, character)
 		humanoid.WalkSpeed = 22
 		humanoid.JumpPower = 54
 	end
-	-- A character's pivot is its HumanoidRootPart: stand it clear of the spawn pad.
-	character:PivotTo(CFrame.new(Config.World.spawnPosition.X, 4, Config.World.spawnPosition.Z))
+	-- A character's pivot is its HumanoidRootPart: stand it clear of the spawn pad. The part
+	-- can lag the CharacterAdded signal by a frame, so wait briefly rather than error.
+	local root = character:WaitForChild("HumanoidRootPart", 5)
+	if root then
+		character:PivotTo(CFrame.new(Config.World.spawnPosition.X, 4, Config.World.spawnPosition.Z))
+	end
 end
 
 local function onPlayerAdded(player)
