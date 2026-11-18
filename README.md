@@ -1,3 +1,8 @@
+[![make.fun · roblox-brainrot-01](https://make.fun/badge/roblox-brainrot-01.svg)](https://make.fun/bounty/roblox-brainrot-01?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
+[![rank](https://make.fun/badge/roblox-brainrot-01/levikasep12/roblox-brainrot-01/rank.svg)](https://make.fun/bounty/roblox-brainrot-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
+[![reward](https://make.fun/badge/roblox-brainrot-01/levikasep12/roblox-brainrot-01/reward.svg)](https://make.fun/bounty/roblox-brainrot-01?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
+[Play it on Roblox](https://www.roblox.com/games/100535318232718)
+
 # Brainrot Rush
 
 A 3D steal-a-brainrot game for Roblox, built with Rojo. Twelve handmade meme characters
@@ -5,12 +10,6 @@ A 3D steal-a-brainrot game for Roblox, built with Rojo. Twelve handmade meme cha
 grab them onto your base plot where they earn money per second, climb the rarity ladder,
 buy rebirths for a permanent multiplier, lock your base against thieves, and dash home
 when the hazard wave sweeps the map.
-
-[![make.fun · roblox-brainrot-01](https://make.fun/badge/roblox-brainrot-01.svg)](https://make.fun/bounty/roblox-brainrot-01?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
-[![rank](https://make.fun/badge/roblox-brainrot-01/levikasep12/roblox-brainrot-01/rank.svg)](https://make.fun/bounty/roblox-brainrot-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
-[![reward](https://make.fun/badge/roblox-brainrot-01/levikasep12/roblox-brainrot-01/reward.svg)](https://make.fun/bounty/roblox-brainrot-01?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
-
-[Play it on Roblox](https://www.roblox.com/games/100535318232718)
 
 ## How it is built
 
