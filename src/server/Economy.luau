@@ -4,6 +4,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Store = require(script.Parent.Store)
+local Bases = require(script.Parent.Bases)
 
 local Economy = {}
 
@@ -48,6 +49,7 @@ function Economy.rebirth(player)
 	record.money = 0
 	record.rebirths += 1
 	record.multiplier = 1 + record.rebirths * Store.Config.Economy.rebirthBonus
+	Bases.refreshSlotPads(player)
 	return true, string.format("Rebirth %d! Income x%.2f", record.rebirths, record.multiplier)
 end
 

@@ -103,6 +103,11 @@ function Store.releasePlot(player)
 	end
 	local slot = Store.slots[record.plotIndex]
 	if slot and slot.owner == player.UserId then
+		for _, entry in ipairs(slot.models) do
+			if entry.model then
+				entry.model:Destroy()
+			end
+		end
 		slot.owner = nil
 		slot.models = {}
 		slot.lockedUntil = 0
@@ -170,6 +175,8 @@ function Store.award(player, amount)
 	end
 	record.money += amount
 	record.lifetime += math.max(0, amount)
+	-- Money is whole dollars: income ticks can be fractional, the HUD never is.
+	record.money = math.floor(record.money + 0.5)
 	return record.money
 end
 
@@ -207,6 +214,7 @@ function Store.snapshotFor(player)
 			lockedSeconds = math.max(0, math.ceil(slot.lockedUntil - os.clock())),
 			ownerName = record.name,
 			slots = #Config.World.slotOffsets,
+			usedSlots = #slot.models,
 		}
 	end
 	return {

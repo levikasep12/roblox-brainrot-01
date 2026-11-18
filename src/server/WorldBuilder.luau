@@ -23,10 +23,10 @@ local function part(props)
 	return p
 end
 
-local function labelPart(parent, text, color)
+local function labelOnFace(parent, text, color, face, guiName)
 	local gui = Instance.new("SurfaceGui")
-	gui.Name = "SignText"
-	gui.Face = Enum.NormalId.Top
+	gui.Name = guiName or "SignText"
+	gui.Face = face
 	gui.CanvasSize = Vector2.new(500, 160)
 	gui.Parent = parent
 
@@ -38,6 +38,12 @@ local function labelPart(parent, text, color)
 	textLabel.Text = text
 	textLabel.TextColor3 = color or Color3.new(1, 1, 1)
 	textLabel.Parent = gui
+end
+
+-- A free-standing sign reads from both sides, so a player sees it whichever way they walk up.
+local function labelPart(parent, text, color)
+	labelOnFace(parent, text, color, Enum.NormalId.Front, "SignText")
+	labelOnFace(parent, text, color, Enum.NormalId.Back, "SignTextBack")
 end
 
 local function buildGround(world)
@@ -193,7 +199,7 @@ local function buildPlots(world)
 		local glow = part({
 			name = "PlotEdge",
 			size = Vector3.new(Config.World.plotHalfWidth * 2 + 1.6, 0.5, Config.World.plotHalfDepth * 2 + 1.6),
-			position = center + Vector3.new(0, 0.45, 0),
+			position = center + Vector3.new(0, 1.05, 0),
 			color = Color3.fromRGB(120, 220, 255),
 			material = Enum.Material.Neon,
 			collide = false,
@@ -219,7 +225,7 @@ local function buildPlots(world)
 			local pad = part({
 				name = "Slot" .. slotIndex,
 				size = Config.World.slotPadSize,
-				position = center + offset + Vector3.new(0, 0.9, 0),
+				position = center + offset + Vector3.new(0, 1.45, 0),
 				color = Color3.fromRGB(52, 58, 84),
 				material = Enum.Material.Metal,
 				collide = false,
@@ -231,7 +237,7 @@ local function buildPlots(world)
 			local trim = part({
 				name = "SlotTrim",
 				size = Vector3.new(Config.World.slotPadSize.X + 0.6, 0.2, Config.World.slotPadSize.Z + 0.6),
-				position = center + offset + Vector3.new(0, 1.22, 0),
+				position = center + offset + Vector3.new(0, 1.78, 0),
 				color = Color3.fromRGB(96, 132, 200),
 				material = Enum.Material.Neon,
 				collide = false,
@@ -255,7 +261,7 @@ local function buildShop(world)
 	local base = part({
 		name = "ShopBase",
 		size = Vector3.new(56, 1.2, 24),
-		position = Vector3.new(0, 0.6, 46),
+		position = Vector3.new(0, 0.6, 78),
 		color = Color3.fromRGB(94, 66, 48),
 		material = Enum.Material.WoodPlanks,
 	})
@@ -264,7 +270,7 @@ local function buildShop(world)
 	local counter = part({
 		name = "ShopCounter",
 		size = Vector3.new(40, 4, 3),
-		position = Vector3.new(0, 3, 38),
+		position = Vector3.new(0, 3, 66),
 		color = Color3.fromRGB(140, 96, 64),
 		material = Enum.Material.WoodPlanks,
 	})
@@ -274,7 +280,7 @@ local function buildShop(world)
 		local post = part({
 			name = "ShopPost",
 			size = Vector3.new(1.4, 12, 1.4),
-			position = Vector3.new(side * 18, 7, 52),
+			position = Vector3.new(side * 18, 7, 84),
 			color = Color3.fromRGB(110, 76, 52),
 			material = Enum.Material.WoodPlanks,
 		})
@@ -284,17 +290,17 @@ local function buildShop(world)
 	local roof = part({
 		name = "ShopRoof",
 		size = Vector3.new(48, 1.2, 26),
-		position = Vector3.new(0, 15, 48),
+		position = Vector3.new(0, 15, 78),
 		color = Color3.fromRGB(200, 68, 84),
 		material = Enum.Material.Fabric,
 	})
-	roof.CFrame = CFrame.new(0, 15, 48) * CFrame.Angles(math.rad(-6), 0, 0)
+	roof.CFrame = CFrame.new(0, 15, 78) * CFrame.Angles(math.rad(-6), 0, 0)
 	roof.Parent = shop
 
 	local sign = part({
 		name = "ShopSign",
 		size = Vector3.new(30, 6, 0.8),
-		position = Vector3.new(0, 11, 35),
+		position = Vector3.new(0, 11, 63),
 		color = Color3.fromRGB(28, 30, 40),
 		material = Enum.Material.SmoothPlastic,
 		collide = false,
@@ -376,12 +382,12 @@ local function buildDecor(world)
 	local billboard = part({
 		name = "WelcomeSign",
 		size = Vector3.new(34, 9, 0.8),
-		position = Vector3.new(0, 9, 66),
+		position = Vector3.new(0, 9, 106),
 		color = Color3.fromRGB(20, 22, 30),
 		material = Enum.Material.SmoothPlastic,
 		collide = false,
 	})
-	billboard.CFrame = CFrame.new(0, 9, 66) * CFrame.Angles(math.rad(-8), 0, 0)
+	billboard.CFrame = CFrame.new(0, 9, 106) * CFrame.Angles(math.rad(-8), 0, 0)
 	billboard.Parent = decor
 	labelPart(billboard, "BRAINROT RUSH", Color3.fromRGB(255, 124, 184))
 
@@ -389,7 +395,7 @@ local function buildDecor(world)
 		local post = part({
 			name = "WelcomePost",
 			size = Vector3.new(0.8, 9, 0.8),
-			position = Vector3.new(side * 15, 4.5, 66),
+			position = Vector3.new(side * 15, 4.5, 106),
 			color = Color3.fromRGB(56, 60, 72),
 			material = Enum.Material.Metal,
 		})
@@ -409,15 +415,14 @@ function WorldBuilder.build()
 
 	buildGround(world)
 	buildConveyor(world)
-	local plots, plotParts = buildPlots(world)
-	plots.Parent = world
+	local _, plotParts = buildPlots(world)
 	buildShop(world)
 	buildDecor(world)
 
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "PlayerSpawn"
 	spawn.Size = Vector3.new(14, 1, 14)
-	spawn.Position = Vector3.new(0, 0.6, 30)
+	spawn.Position = Config.World.spawnPosition - Vector3.new(0, 3.4, 0)
 	spawn.Anchored = true
 	spawn.Color = Color3.fromRGB(96, 200, 255)
 	spawn.Material = Enum.Material.Neon

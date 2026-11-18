@@ -17,6 +17,8 @@ local SOUNDS = {
 	lock = "rbxasset://sounds/switch.wav",
 }
 
+-- The engine ships these; a missing one must never break feedback, so a failed load
+-- just leaves the burst (which is already visible) and the sound is dropped.
 local function playAt(parent, soundId, volume)
 	if not parent then
 		return
@@ -26,7 +28,13 @@ local function playAt(parent, soundId, volume)
 	sound.Volume = volume or 0.6
 	sound.RollOffMaxDistance = 90
 	sound.Parent = parent
-	sound:Play()
+	local ok = pcall(function()
+		sound:Play()
+	end)
+	if not ok then
+		sound:Destroy()
+		return
+	end
 	Debris:AddItem(sound, 4)
 end
 

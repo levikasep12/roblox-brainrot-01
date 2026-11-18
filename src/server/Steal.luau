@@ -63,7 +63,7 @@ function Steal.trySteal(thief, plotIndex)
 
 	local victim = Store.byUser[slot.owner]
 	local victimName = victim and victim.Name or "a rival"
-	local taken = Bases.removeAt(victim, bestIndex)
+	local taken = victim and Bases.removeAt(victim, bestIndex) or nil
 	if not taken then
 		return false, "They got away"
 	end

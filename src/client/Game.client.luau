@@ -4,8 +4,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ContextActionService = game:GetService("ContextActionService")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
@@ -14,7 +12,6 @@ local Feedback = require(ReplicatedStorage.Shared.Feedback)
 local HUD = require(script.Parent.HUD)
 
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
 
 local hud = HUD.create(player)
 hud.displayedMoney = 0
@@ -27,7 +24,6 @@ local rebirthRemote = Remotes.get("Rebirth")
 local lockRemote = Remotes.get("ToggleLock")
 local buyResult = Remotes.get("BuyResult")
 
-local latestState = nil
 local hudBuiltShop = false
 
 -- The banner follows the wave phase:
@@ -55,9 +51,10 @@ local function renderBanner(state)
 end
 
 local function applyState(state)
-	latestState = state
 	HUD.setMoney(hud, state.money)
-	HUD.setIncome(hud, state.income, state.multiplier, state.rebirths, state.incomeDouble)
+	-- Show the income the player is actually earning, so the number doubles during x2.
+	local shownIncome = state.incomeDouble and state.income * 2 or state.income
+	HUD.setIncome(hud, shownIncome, state.multiplier, state.rebirths, state.incomeDouble)
 	renderBanner(state)
 
 	if state.plot then
@@ -103,9 +100,7 @@ celebrate.OnClientEvent:Connect(function(payload)
 end)
 
 buyResult.OnClientEvent:Connect(function(payload)
-	if payload.ok then
-		Feedback.play("buy", nil)
-	else
+	if not payload.ok then
 		HUD.addToast(hud, payload.message, "danger")
 	end
 end)
@@ -154,6 +149,7 @@ highlight.FillColor = Color3.fromRGB(255, 224, 120)
 highlight.FillTransparency = 0.75
 highlight.OutlineColor = Color3.fromRGB(255, 236, 160)
 highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+highlight.Parent = workspace
 
 local function updateHighlight()
 	local character = player.Character
@@ -187,6 +183,10 @@ end)
 
 player.CharacterAdded:Connect(function()
 	task.delay(0.5, function()
+		-- A respawn is a fresh HUD view: snap the tweened counter back to real state.
 		hud.displayedMoney = 0
+		if hud.moneyProxy then
+			hud.moneyProxy.Value = 0
+		end
 	end)
 end)

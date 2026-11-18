@@ -63,13 +63,15 @@ local function makeWall(world)
 	return part
 end
 
+-- The wall sweeps in +X. Anyone it has already passed, who is not standing on their own
+-- plot, is caught once and loses a share of their money.
 local function punishStragglers()
 	for _, player in ipairs(Players:GetPlayers()) do
 		local record = Store.players[player.UserId]
-		if record and not wallHit[player.UserId] then
+		if record and not wallHit[player.UserId] and wall then
 			local character = player.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart")
-			if root and root.Position.X <= wall.Position.X and not isHome(player) then
+			if root and root.Position.X < wall.Position.X and not isHome(player) then
 				wallHit[player.UserId] = true
 				local loss = math.floor(record.money * Config.Economy.wavePenaltyShare)
 				record.money = math.max(0, record.money - loss)
@@ -114,8 +116,9 @@ function Events.start(world)
 		wall.Transparency = 1
 		Store.wave.phase = "calm"
 		Store.wave.endsAt = os.clock() + Config.Wave.firstCalmSeconds
+		task.wait(Config.Wave.firstCalmSeconds)
+
 		while true do
-			task.wait(Config.Wave.firstCalmSeconds)
 			Store.wave.waveNumber += 1
 			Store.wave.phase = "warning"
 			Store.wave.endsAt = os.clock() + Config.Wave.warningSeconds
@@ -126,6 +129,7 @@ function Events.start(world)
 			end
 			runSweep()
 
+			-- The x2 window is the "double" phase; runSweep already set its end time.
 			task.wait(Config.Wave.doubleSeconds)
 			Store.wave.phase = "calm"
 			Store.wave.doubleUntil = 0

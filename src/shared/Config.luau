@@ -6,7 +6,7 @@ Config.World = {
 	conveyorLength = 78,
 	conveyorStartZ = -46,
 	conveyorDeckY = 2.2,
-	spawnPosition = Vector3.new(0, 4, 58),
+	spawnPosition = Vector3.new(0, 4, 52),
 	plotCenters = {
 		Vector3.new(-64, 0, -46),
 		Vector3.new(-64, 0, -4),

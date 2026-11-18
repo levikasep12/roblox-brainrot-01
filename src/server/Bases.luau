@@ -14,6 +14,8 @@ function Bases.setPlotParts(parts)
 	Bases.plotParts = parts
 end
 
+-- Where a brainrot stands: the Body sphere (radius 1.7) rests on the slot pad, whose top
+-- is plot height + 1.7, so its centre sits 1.7 above that.
 function Bases.slotWorldPosition(plotIndex, slotIndex)
 	local config = Store.Config.World
 	local center = config.plotCenters[plotIndex]
@@ -21,7 +23,7 @@ function Bases.slotWorldPosition(plotIndex, slotIndex)
 	if not center or not offset then
 		return nil
 	end
-	return center + offset + Vector3.new(0, 2, 0)
+	return center + offset + Vector3.new(0, 3.4, 0)
 end
 
 function Bases.slotPad(plotIndex, slotIndex)
@@ -32,7 +34,7 @@ function Bases.slotPad(plotIndex, slotIndex)
 	return entry.slots[slotIndex]
 end
 
--- Claims a plot on join and paints its sign with the owner's name.
+-- Claims a plot on join and paints both faces of its sign with the owner's name.
 function Bases.onPlayerJoin(player)
 	local index = Store.claimPlot(player)
 	if index == nil then
@@ -40,11 +42,12 @@ function Bases.onPlayerJoin(player)
 	end
 	local entry = Bases.plotParts[index]
 	if entry and entry.sign then
-		local gui = entry.sign:FindFirstChild("SignText")
-		if gui then
-			local textLabel = gui:FindFirstChildOfClass("TextLabel")
-			if textLabel then
-				textLabel.Text = string.upper(player.Name) .. "'S BASE"
+		for _, gui in ipairs(entry.sign:GetChildren()) do
+			if gui:IsA("SurfaceGui") then
+				local textLabel = gui:FindFirstChildOfClass("TextLabel")
+				if textLabel then
+					textLabel.Text = string.upper(player.Name) .. "'S BASE"
+				end
 			end
 		end
 	end

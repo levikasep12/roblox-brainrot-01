@@ -220,27 +220,30 @@ function HUD.create(player)
 end
 
 -- Tweens the money number up (and down) instead of snapping, so income ticks visibly.
+-- One persistent proxy is reused and its tween retargeted, so four state pushes a second
+-- never pile up overlapping tweens or leak NumberValues.
 function HUD.setMoney(hud, amount)
-	local from = hud.displayedMoney
-	if from == amount then
-		return
+	if not hud.moneyProxy then
+		local proxy = Instance.new("NumberValue")
+		proxy.Name = "DisplayedMoney"
+		proxy.Value = 0
+		proxy.Parent = hud.gui
+		proxy:GetPropertyChangedSignal("Value"):Connect(function()
+			hud.moneyLabel.Text = "$" .. string.format("%d", math.floor(proxy.Value))
+		end)
+		hud.moneyProxy = proxy
+	end
+	local proxy = hud.moneyProxy
+	if hud.moneyTween then
+		hud.moneyTween:Cancel()
 	end
 	hud.displayedMoney = amount
-	local proxy = Instance.new("NumberValue")
-	proxy.Value = from
-	local connection
-	connection = proxy:GetPropertyChangedSignal("Value"):Connect(function()
-		hud.moneyLabel.Text = "$" .. string.format("%d", math.floor(proxy.Value))
-	end)
-	local tween = TweenService:Create(proxy, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Value = amount })
-	tween:Play()
-	tween.Completed:Once(function()
-		if connection then
-			connection:Disconnect()
-		end
-		hud.moneyLabel.Text = "$" .. string.format("%d", amount)
-		proxy:Destroy()
-	end)
+	hud.moneyTween = TweenService:Create(
+		proxy,
+		TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Value = amount }
+	)
+	hud.moneyTween:Play()
 end
 
 function HUD.setIncome(hud, perSecond, multiplier, rebirths, doubled)

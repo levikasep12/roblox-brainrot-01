@@ -4,7 +4,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local BrainrotDefs = require(ReplicatedStorage.Shared.BrainrotDefs)
@@ -59,9 +58,12 @@ local function rollMutation()
 	return nil, 1
 end
 
+-- The deck's top is conveyorDeckY + 0.3; the Body sphere's centre goes 1.7 above it.
+local CONVEYOR_STAND_Y = 2
+
 local function placeOnConveyor(entry)
 	local model = entry.model
-	model:PivotTo(CFrame.new(0, Config.World.conveyorDeckY + 0.5, entry.z))
+	model:PivotTo(CFrame.new(0, Config.World.conveyorDeckY + CONVEYOR_STAND_Y, entry.z))
 end
 
 local function spawnOne()
@@ -110,37 +112,6 @@ local function despawn(entry)
 	if entry.model then
 		entry.model:Destroy()
 	end
-end
-
--- The nearest unclaimed runway brainrot to a player, within the buy reach.
-function Spawner.nearest(player)
-	local character = player.Character
-	local root = character and character:FindFirstChild("HumanoidRootPart")
-	if not root then
-		return nil
-	end
-	local best, bestDistance = nil, Config.Conveyor.buyDistance
-	for _, entry in pairs(Store.conveyor) do
-		if not entry.claimed and entry.model and entry.model.PrimaryPart then
-			local distance = (entry.model.PrimaryPart.Position - root.Position).Magnitude
-			if distance < bestDistance then
-				best, bestDistance = entry, distance
-			end
-		end
-	end
-	return best
-end
-
-function Spawner.byDef(defId)
-	local best = nil
-	for _, entry in pairs(Store.conveyor) do
-		if not entry.claimed and entry.def.id == defId and entry.model then
-			if best == nil or entry.z > best.z then
-				best = entry
-			end
-		end
-	end
-	return best
 end
 
 -- Hands a runway entry to a player: remove it from the runway, put it on their plot.
@@ -277,7 +248,8 @@ function Spawner.start(world)
 		placeOnConveyor(entry)
 	end
 
-	-- Restock the runway whenever it has room.
+	-- Restock the runway whenever it has room: a new brainrot appears at the spawn ring
+	-- only when no one is still standing there, so two never overlap.
 	task.spawn(function()
 		while true do
 			task.wait(Config.Conveyor.respawnDelay)
@@ -285,15 +257,13 @@ function Spawner.start(world)
 			for _ in pairs(Store.conveyor) do
 				count += 1
 			end
-			local spawnRoom = Config.Conveyor.npcCount + 2
-			local freeStart = Config.World.conveyorStartZ + Config.Conveyor.npcCount * Config.Conveyor.spacing
-			local occupied = false
+			local ringClear = true
 			for _, entry in pairs(Store.conveyor) do
-				if entry.z < freeStart + 4 then
-					occupied = true
+				if entry.z < Config.World.conveyorStartZ + 4 then
+					ringClear = false
 				end
 			end
-			if count < spawnRoom and not occupied then
+			if count < Config.Conveyor.npcCount and ringClear then
 				spawnOne()
 			end
 		end
@@ -308,7 +278,7 @@ function Spawner.start(world)
 				local bob = math.sin(os.clock() * 3 + entry.brainrotId) * 0.12
 				entry.model:PivotTo(CFrame.new(
 					math.sin(entry.z * 0.1) * 3,
-					Config.World.conveyorDeckY + 0.5 + bob,
+					Config.World.conveyorDeckY + 2 + bob,
 					entry.z
 				))
 			end
@@ -319,11 +289,5 @@ function Spawner.start(world)
 	end)
 end
 
--- Runs one immediate spawn on behalf of any player (used by the shop's "summon" fallback).
-function Spawner.spawnNow()
-	if arena then
-		spawnOne()
-	end
-end
-
+-- Runs one immediate spawn on behalf of any player (used by the shop's fallback).
 return Spawner

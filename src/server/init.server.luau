@@ -29,21 +29,24 @@ local function toast(player, text, tone)
 	showToast:FireClient(player, { text = text, tone = tone or "info" })
 end
 
+-- The shop catalogue never changes at runtime: build it once, not on every state push.
+local shopPayload = {}
+for _, def in ipairs(Store.Defs.sortedByPrice()) do
+	table.insert(shopPayload, {
+		id = def.id,
+		name = def.name,
+		rarity = def.rarity,
+		price = math.floor(def.price * 1.2),
+		rate = def.rate,
+	})
+end
+
 local function pushState(player)
 	if not player.Parent then
 		return
 	end
 	local snapshot = Store.snapshotFor(player)
-	snapshot.shop = {}
-	for _, def in ipairs(Store.Defs.sortedByPrice()) do
-		table.insert(snapshot.shop, {
-			id = def.id,
-			name = def.name,
-			rarity = def.rarity,
-			price = math.floor(def.price * 1.2),
-			rate = def.rate,
-		})
-	end
+	snapshot.shop = shopPayload
 	stateSync:FireClient(player, snapshot)
 end
 
@@ -108,11 +111,11 @@ watchOwnedModels()
 
 buyRemote.OnServerEvent:Connect(function(player, defId)
 	local ok, message = Spawner.orderFromShop(player, defId)
-	buyResult:FireClient(player, { ok = ok, message = message })
 	if ok then
-		celebrate:FireClient(player, { kind = "buy", text = "ORDER PLACED" })
+		-- One notice per action: the celebrate burst and toast, and nothing else.
+		celebrate:FireClient(player, { kind = "buy", text = message })
 	else
-		toast(player, message, "danger")
+		buyResult:FireClient(player, { ok = false, message = message })
 	end
 	pushState(player)
 end)
