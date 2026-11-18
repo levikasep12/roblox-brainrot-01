@@ -1,3 +1,7 @@
+// Entrypoint for the Brainrot Rush submission: copies the built place, source, screenshots and
+// play metadata into the output directory and writes the judge's dossier.json, using only Node's
+// standard library plus the vendored make.fun helper.
+//
 // A working roblox-brainrot-01 entry (Node 22, standard library only): the game is this directory's Rojo
 // project, built into game.rbxl with `rojo build default.project.json --output game.rbxl`, and the program
 // hands it in. It copies game.rbxl, src/, screenshots/ and PLAY.json from beside this file to /output and
@@ -24,6 +28,7 @@ const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 /** cpSync's filter: leave out every file and directory whose name starts with a dot (.gitkeep, .DS_Store, .git). */
 const notDotted = (path: string): boolean => !basename(path).startsWith('.');
 
+mkdirSync(out, { recursive: true });
 copyFileSync(join(here, 'game.rbxl'), join(out, 'game.rbxl'));
 copyFileSync(join(here, 'PLAY.json'), join(out, 'PLAY.json'));
 cpSync(join(here, 'src'), join(out, 'src'), { recursive: true, filter: notDotted });
