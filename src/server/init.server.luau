@@ -30,6 +30,7 @@ local WaveAlert = Remotes.WaveAlert
 WorldBuilder.Build()
 Store.ResetBases()
 BaseService.SeedRivals()
+BaseService.StartRivalRestock(14)
 
 -- One publish path so every mutation, prompt and timer sends the same shape.
 local function pushState(player)
@@ -99,7 +100,7 @@ local function onPlayerAdded(player)
 	player.CharacterAdded:Connect(function(character)
 		local root = character:WaitForChild("HumanoidRootPart")
 		local base = Config.PlotCenter(record.plotIndex)
-		-- Lands on the plot deck, whose top is at PlotTopY.
+		-- Lands on the plot deck, in the gap between the two pad rows.
 		root.CFrame = CFrame.new(base + Vector3.new(0, Config.PlotTopY + 4, 0))
 	end)
 

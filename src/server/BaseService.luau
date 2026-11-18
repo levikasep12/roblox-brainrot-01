@@ -47,7 +47,7 @@ function BaseService.PlaceInSlot(plotIndex, slotIndex, def, mutation, rate, exis
 		return
 	end
 	local slotPos = Config.SlotPosition(plotIndex, slotIndex)
-	local frame = BrainrotModel.FacingCFrame(slotPos + Vector3.new(0, 0.4, 0), Config.SlotFacing(plotIndex))
+	local frame = BrainrotModel.FacingCFrame(slotPos, Config.SlotFacing(plotIndex))
 
 	local model = existingModel
 	if model then
@@ -95,7 +95,7 @@ function BaseService.SettleInSlot(model, plotIndex, slotIndex, def)
 		return
 	end
 	local slotPos = Config.SlotPosition(plotIndex, slotIndex)
-	local frame = BrainrotModel.FacingCFrame(slotPos + Vector3.new(0, 0.4, 0), Config.SlotFacing(plotIndex))
+	local frame = BrainrotModel.FacingCFrame(slotPos, Config.SlotFacing(plotIndex))
 	model:PivotTo(frame)
 
 	local root = model.PrimaryPart
@@ -140,7 +140,7 @@ end
 function BaseService.FlyModelToSlot(model, destPlotIndex, destSlotIndex, def)
 	local start = model:GetPivot()
 	local slotPos = Config.SlotPosition(destPlotIndex, destSlotIndex)
-	local goal = BrainrotModel.FacingCFrame(slotPos + Vector3.new(0, 0.4, 0), Config.SlotFacing(destPlotIndex))
+	local goal = BrainrotModel.FacingCFrame(slotPos, Config.SlotFacing(destPlotIndex))
 	local steps = 22
 	task.spawn(function()
 		for step = 1, steps do
@@ -228,7 +228,8 @@ function BaseService.Burst(position, color, count)
 end
 
 -- Puts the demo rivals' brainrots on their plots, so a lone player still has
--- something to steal and someone to compete with.
+-- something to steal and someone to compete with. Called at startup and again
+-- whenever a rival's plot has been emptied, so the game never runs dry.
 function BaseService.SeedRivals()
 	for _, rival in ipairs(Config.DemoRivals) do
 		local base = Store.GetBase(rival.plotIndex)
@@ -236,16 +237,42 @@ function BaseService.SeedRivals()
 			base.ownerName = rival.name
 			base.rival = true
 			for index, defId in ipairs(rival.brainrots) do
-				local def = BrainrotDefs.Get(defId)
-				if def then
-					local rate = def.rate
-					base.slots[index] = { defId = defId, rate = rate }
-					BaseService.PlaceInSlot(rival.plotIndex, index, def, nil, rate)
+				if not base.slots[index] then
+					local def = BrainrotDefs.Get(defId)
+					if def then
+						base.slots[index] = { defId = defId, rate = def.rate }
+						BaseService.PlaceInSlot(rival.plotIndex, index, def, nil, def.rate)
+					end
 				end
 			end
 			BaseService.RefreshPlotSign(rival.plotIndex)
 		end
 	end
+end
+
+-- Rivals restock on a timer: any plot no real player owns that has an empty
+-- slot gets a fresh brainrot, so stealing always has a target.
+function BaseService.StartRivalRestock(interval)
+	task.spawn(function()
+		while true do
+			task.wait(interval or 12)
+			for _, rival in ipairs(Config.DemoRivals) do
+				local base = Store.GetBase(rival.plotIndex)
+				if base and not base.ownerUserId then
+					local freeSlot = Store.FreeSlotOf(rival.plotIndex)
+					if freeSlot then
+						local defId = rival.brainrots[math.random(#rival.brainrots)]
+						local def = BrainrotDefs.Get(defId)
+						if def then
+							base.slots[freeSlot] = { defId = defId, rate = def.rate }
+							BaseService.PlaceInSlot(rival.plotIndex, freeSlot, def, nil, def.rate)
+							BaseService.RefreshPlotSign(rival.plotIndex)
+						end
+					end
+				end
+			end
+		end
+	end)
 end
 
 -- The lock expiry timer for one plot: repaint the sign when it runs out.

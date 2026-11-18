@@ -38,6 +38,9 @@ Config.SlotOffsets = {
 }
 Config.SlotPadSize = 8.4
 Config.PlotTopY = 1
+-- How thick a slot pad is. It sits on the plot deck, and a housed brainrot's
+-- feet rest on its top face, so SlotPosition adds this to PlotTopY.
+Config.SlotPadHeight = 0.5
 Config.ShopPosition = Vector3.new(0, 0, 112)
 Config.SpawnPosition = Vector3.new(0, 0, 80)
 Config.SpawnPlazaSize = Vector2.new(60, 26)
@@ -81,10 +84,12 @@ function Config.PlotCenter(plotIndex)
 	return Config.PlotCenters[plotIndex] or Config.PlotCenters[1]
 end
 
+-- Where a housed brainrot's feet go: centred on its pad, resting on the pad's
+-- top face rather than sunk into the plot deck.
 function Config.SlotPosition(plotIndex, slotIndex)
 	local center = Config.PlotCenter(plotIndex)
 	local offset = Config.SlotOffsets[slotIndex] or Vector3.zero
-	return center + offset + Vector3.new(0, Config.PlotTopY + 0.05, 0)
+	return center + offset + Vector3.new(0, Config.PlotTopY + Config.SlotPadHeight, 0)
 end
 
 -- Which way a housed brainrot faces: toward the middle of the map, so a

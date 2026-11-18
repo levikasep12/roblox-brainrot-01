@@ -220,10 +220,12 @@ local function makePlot(plotIndex)
 
 	for slotIndex = 1, Config.SlotsPerPlot do
 		local slotPos = Config.SlotPosition(plotIndex, slotIndex)
+		-- The pad's centre sits half its thickness above the deck, so its top
+		-- face is exactly where SlotPosition puts a character's feet.
 		local pad = part({
 			name = "SlotPad" .. slotIndex,
-			size = Vector3.new(Config.SlotPadSize, 0.35, Config.SlotPadSize),
-			position = slotPos + Vector3.new(0, -0.55, 0),
+			size = Vector3.new(Config.SlotPadSize, Config.SlotPadHeight, Config.SlotPadSize),
+			position = slotPos + Vector3.new(0, -Config.SlotPadHeight * 0.5, 0),
 			color = PALETTE.metalDark,
 			material = Enum.Material.Metal,
 			parent = group,
@@ -232,8 +234,8 @@ local function makePlot(plotIndex)
 		pad:SetAttribute("PlotIndex", plotIndex)
 		local inner = part({
 			name = "SlotGlow" .. slotIndex,
-			size = Vector3.new(Config.SlotPadSize - 1.4, 0.2, Config.SlotPadSize - 1.4),
-			position = slotPos + Vector3.new(0, -0.3, 0),
+			size = Vector3.new(Config.SlotPadSize - 1.4, 0.16, Config.SlotPadSize - 1.4),
+			position = slotPos + Vector3.new(0, 0.03, 0),
 			color = Color3.fromRGB(60, 68, 88),
 			material = Enum.Material.Neon,
 			transparency = 0.35,

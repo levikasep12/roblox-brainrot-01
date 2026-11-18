@@ -25,11 +25,13 @@ local function buildWaveWall()
 	wall.CanCollide = false
 	wall.CanQuery = false
 	wall.CanTouch = false
-	wall.Size = Vector3.new(300, 26, 8)
+	-- Spans the whole baseplate (360 wide), so nobody is safe by standing at
+	-- the far edge of the map.
+	wall.Size = Vector3.new(400, 34, 10)
 	wall.Color = Color3.fromRGB(255, 70, 120)
 	wall.Material = Enum.Material.ForceField
 	wall.Transparency = 0.25
-	wall.Position = Vector3.new(0, 12, WAVE_START_Z)
+	wall.Position = Vector3.new(0, 14, WAVE_START_Z)
 	wall.Parent = workspace
 	return wall
 end
@@ -46,6 +48,8 @@ local function announce(text, duration)
 	end
 end
 
+-- Knocks a player toward their own base. The launch is apportioned to the
+-- distance so a far player crosses the map and a near one does not overshoot.
 local function pushPlayerHome(player)
 	local character = player.Character
 	local record = Store.GetPlayer(player.UserId)
@@ -58,8 +62,13 @@ local function pushPlayerHome(player)
 	end
 	local baseCenter = Config.PlotCenter(record.plotIndex)
 	local target = baseCenter + Vector3.new(0, 6, 0)
-	local direction = (target - root.Position).Unit
-	root.AssemblyLinearVelocity = direction * 120 + Vector3.new(0, 55, 0)
+	local offset = target - root.Position
+	local distance = offset.Magnitude
+	local direction = distance > 0.01 and (offset.Unit) or Vector3.new(0, 1, 0)
+	-- Enough speed to cover the distance in about a second, capped so nobody
+	-- is flung past their own base and off the map.
+	local speed = math.clamp(distance * 1.6, 40, 150)
+	root.AssemblyLinearVelocity = direction * speed + Vector3.new(0, 45, 0)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if humanoid then
 		humanoid:TakeDamage(Config.WaveDamage)
@@ -94,11 +103,28 @@ local function runWave(index)
 	mood.Saturation = 0.15
 	mood.Parent = game:GetService("Lighting")
 
+	-- A second, wider skirt under the wall reads as the wave's leading edge
+	-- from a distance and makes the danger obvious in a screenshot.
+	local skirt = Instance.new("Part")
+	skirt.Name = "HazardSkirt"
+	skirt.Anchored = true
+	skirt.CanCollide = false
+	skirt.CanQuery = false
+	skirt.CanTouch = false
+	skirt.Size = Vector3.new(400, 1.2, 18)
+	skirt.Color = Color3.fromRGB(255, 120, 150)
+	skirt.Material = Enum.Material.Neon
+	skirt.Transparency = 0.2
+	skirt.Position = Vector3.new(0, 0.6, WAVE_START_Z)
+	skirt.Parent = workspace
+
 	while true do
 		local alpha = math.clamp((os.clock() - startClock) / travel, 0, 1)
 		local z = WAVE_START_Z + (WAVE_END_Z - WAVE_START_Z) * alpha
-		wall.Position = Vector3.new(0, 12, z)
+		wall.Position = Vector3.new(0, 14, z)
+		skirt.Position = Vector3.new(0, 0.6, z + 4)
 		wall.Transparency = 0.25 + math.sin(os.clock() * 12) * 0.08
+		skirt.Transparency = 0.2 + math.sin(os.clock() * 9) * 0.08
 
 		for _, player in ipairs(Players:GetPlayers()) do
 			local character = player.Character
@@ -130,8 +156,11 @@ local function runWave(index)
 
 	local fade = TweenService:Create(wall, TweenInfo.new(0.6), { Transparency = 1 })
 	fade:Play()
+	local skirtFade = TweenService:Create(skirt, TweenInfo.new(0.6), { Transparency = 1 })
+	skirtFade:Play()
 	task.wait(0.7)
 	wall:Destroy()
+	skirt:Destroy()
 	mood:Destroy()
 	Store.Wave.active = false
 	Store.Wave.index = 0
