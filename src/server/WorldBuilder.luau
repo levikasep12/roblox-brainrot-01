@@ -422,7 +422,8 @@ function WorldBuilder.build()
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "PlayerSpawn"
 	spawn.Size = Vector3.new(14, 1, 14)
-	spawn.Position = Config.World.spawnPosition - Vector3.new(0, 3.4, 0)
+	-- Sit the pad's top just above the plaza so a spawning character lands on it, not inside it.
+	spawn.Position = Vector3.new(Config.World.spawnPosition.X, 0.5, Config.World.spawnPosition.Z)
 	spawn.Anchored = true
 	spawn.Color = Color3.fromRGB(96, 200, 255)
 	spawn.Material = Enum.Material.Neon

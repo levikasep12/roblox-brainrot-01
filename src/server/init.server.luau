@@ -7,13 +7,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 
-local Store = require(script.Parent.Store)
-local Economy = require(script.Parent.Economy)
-local Bases = require(script.Parent.Bases)
-local Spawner = require(script.Parent.Spawner)
-local Steal = require(script.Parent.Steal)
-local Events = require(script.Parent.Events)
-local WorldBuilder = require(script.Parent.WorldBuilder)
+-- Rojo turns this folder into this Script, so the modules are its own children.
+local Store = require(script.Store)
+local Economy = require(script.Economy)
+local Bases = require(script.Bases)
+local Spawner = require(script.Spawner)
+local Steal = require(script.Steal)
+local Events = require(script.Events)
+local WorldBuilder = require(script.WorldBuilder)
 
 local remotesFolder = Remotes.init()
 local stateSync = Remotes.get("StateSync")
@@ -63,7 +64,8 @@ local function onCharacter(player, character)
 		humanoid.WalkSpeed = 22
 		humanoid.JumpPower = 54
 	end
-	character:PivotTo(CFrame.new(Config.World.spawnPosition))
+	-- A character's pivot is its HumanoidRootPart: stand it clear of the spawn pad.
+	character:PivotTo(CFrame.new(Config.World.spawnPosition.X, 4, Config.World.spawnPosition.Z))
 end
 
 local function onPlayerAdded(player)
