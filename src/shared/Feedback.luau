@@ -1,11 +1,10 @@
 -- Feedback: particle bursts and sound on a purchase, steal or rebirth. Uses only
 -- Roblox's built-in sounds (rbxasset:// paths shipped with the engine), never an
--- unverifiable uploaded asset id.
+-- unverifiable uploaded asset id. The same module runs on the client (where the burst
+-- is local and immediate) and is safe to require on the server.
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
-
-local Config = require(ReplicatedStorage.Shared.Config)
+local Players = game:GetService("Players")
 
 local Feedback = {}
 
@@ -69,7 +68,7 @@ local function burst(position, color, count)
 end
 
 local function localCharacterPosition()
-	local character = game:GetService("Players").LocalPlayer.Character
+	local character = Players.LocalPlayer.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
 	return root and root.Position
 end
