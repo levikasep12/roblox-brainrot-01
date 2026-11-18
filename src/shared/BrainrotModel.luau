@@ -21,47 +21,49 @@ local function newPart(name, size, color, material)
 	return part
 end
 
--- The body per shape, plus the point the face is mounted on: every shape returns the
--- head centre and its front depth so the eyes and mouth sit on the surface, never float.
+-- The body per shape. Every shape's lowest part sits at model y = 0, so the model's pivot
+-- (the Body's centre) can be measured once and every placement then uses that number.
+-- A Cylinder part's Size is (height along X, diameter Y, diameter Z); rotating it 90
+-- degrees about Z stands it upright, so height is written first.
 local function buildBody(def, model)
-	local headY = 3.6
+	local headY = 3.4
 	local faceZ = 1.15
 
 	if def.shape == "box" then
 		local body = newPart("Body", Vector3.new(3.4, 3.4, 3.4), def.bodyColor)
-		body.Position = Vector3.new(0, 1.8, 0)
+		body.Position = Vector3.new(0, 1.7, 0)
 		body.Parent = model
 
 		local torso = newPart("Torso", Vector3.new(3.6, 2.4, 3.6), def.bodyColor)
-		torso.Position = Vector3.new(0, 3.6, 0)
+		torso.Position = Vector3.new(0, 3.5, 0)
 		torso.Parent = model
-		headY, faceZ = 3.9, 1.85
+		headY, faceZ = 3.8, 1.85
 	elseif def.shape == "cone" then
-		local base = newPart("Body", Vector3.new(3.6, 1.2, 3.6), def.bodyColor)
+		local base = newPart("Body", Vector3.new(1.2, 3.6, 3.6), def.bodyColor)
 		base.Shape = Enum.PartType.Cylinder
-		base.CFrame = CFrame.new(0, 1.1, 0) * CFrame.Angles(0, 0, math.rad(90))
+		base.CFrame = CFrame.new(0, 0.6, 0) * CFrame.Angles(0, 0, math.rad(90))
 		base.Parent = model
 
-		local torso = newPart("Torso", Vector3.new(3.2, 2.6, 3.2), def.bodyColor)
+		local torso = newPart("Torso", Vector3.new(2.6, 2.8, 2.8), def.bodyColor)
 		torso.Shape = Enum.PartType.Cylinder
-		torso.CFrame = CFrame.new(0, 3.2, 0) * CFrame.Angles(0, 0, math.rad(90))
+		torso.CFrame = CFrame.new(0, 2.5, 0) * CFrame.Angles(0, 0, math.rad(90))
 		torso.Parent = model
 
-		local tip = newPart("Tip", Vector3.new(1.6, 1.4, 1.6), def.accentColor)
+		local tip = newPart("Tip", Vector3.new(1.4, 1.6, 1.6), def.accentColor)
 		tip.Shape = Enum.PartType.Cylinder
-		tip.CFrame = CFrame.new(0, 5.1, 0) * CFrame.Angles(0, 0, math.rad(90))
+		tip.CFrame = CFrame.new(0, 4.5, 0) * CFrame.Angles(0, 0, math.rad(90))
 		tip.Parent = model
-		headY, faceZ = 3.4, 1.55
+		headY, faceZ = 2.6, 1.5
 	else
 		local body = newPart("Body", Vector3.new(3.4, 3.4, 3.4), def.bodyColor)
 		body.Shape = Enum.PartType.Ball
-		body.Position = Vector3.new(0, 1.9, 0)
+		body.Position = Vector3.new(0, 1.7, 0)
 		body.Parent = model
 
 		local torso = newPart("Torso", Vector3.new(2.6, 2.2, 2.6), def.bodyColor)
-		torso.Position = Vector3.new(0, 3.7, 0)
+		torso.Position = Vector3.new(0, 3.4, 0)
 		torso.Parent = model
-		headY, faceZ = 3.8, 1.32
+		headY, faceZ = 3.6, 1.32
 	end
 
 	for _, side in ipairs({ -1, 1 }) do
@@ -287,21 +289,43 @@ function BrainrotModel.build(def, ratePerSecond, mutation)
 	end
 
 	-- Anchor the label on the Body and float it above the whole silhouette: StudsOffset is
-	-- measured from the Body's centre, so subtract that centre from the wanted height.
+	-- measured from the Body's centre. Parts are laid out around the origin, so the model's
+	-- own bounds give the true top and bottom (rotated parts such as the cone's upright
+	-- cylinders included). No parenting is needed for a model's bounds.
 	local body = model:FindFirstChild("Body")
 	local topY = 0
-	for _, part in ipairs(model:GetChildren()) do
-		if part:IsA("BasePart") and part.Name ~= "Pupil" then
-			topY = math.max(topY, part.Position.Y + part.Size.Y / 2)
+	local bottomY = math.huge
+	for _, part in ipairs(model:GetDescendants()) do
+		if part:IsA("BasePart") then
+			local halfY = part.Size.Y / 2
+			if part.Shape == Enum.PartType.Cylinder then
+				-- An upright cylinder is rotated about Z: its world height is its X size.
+				local upright = math.abs(part.CFrame.RightVector.Y) > 0.5
+				halfY = (upright and part.Size.X or part.Size.Y) / 2
+			end
+			local c = part.CFrame.Position.Y
+			topY = math.max(topY, c + halfY)
+			bottomY = math.min(bottomY, c - halfY)
 		end
 	end
+
+	-- How far above the model's lowest point its pivot (the Body's centre) sits: callers
+	-- add this to the surface height they want the model to stand on.
+	model:SetAttribute("StandOffset", body.CFrame.Position.Y - bottomY)
+
 	local label = BrainrotModel.buildLabel(def, ratePerSecond, mutation)
-	label.StudsOffset = Vector3.new(0, topY + 1.1 - body.Position.Y, 0)
+	label.StudsOffset = Vector3.new(0, topY + 1.1 - body.CFrame.Position.Y, 0)
 	label.Adornee = body
 	label.Parent = model
 
-	model.PrimaryPart = model:FindFirstChild("Body")
+	model.PrimaryPart = body
 	return model
+end
+
+-- Stands a model on `surfaceY` at (x, z), honouring whatever shape it is.
+function BrainrotModel.placeOn(model, x, surfaceY, z)
+	local offset = model:GetAttribute("StandOffset") or 1.7
+	model:PivotTo(CFrame.new(x, surfaceY + offset, z))
 end
 
 return BrainrotModel

@@ -238,6 +238,7 @@ end
 Players.PlayerRemoving:Connect(function(player)
 	Store.releasePlot(player)
 	Store.players[player.UserId] = nil
+	Store.byUser[player.UserId] = nil
 end)
 
 return Store

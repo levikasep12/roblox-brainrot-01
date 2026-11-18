@@ -14,16 +14,25 @@ function Bases.setPlotParts(parts)
 	Bases.plotParts = parts
 end
 
--- Where a brainrot stands: the Body sphere (radius 1.7) rests on the slot pad, whose top
--- is plot height + 1.7, so its centre sits 1.7 above that.
-function Bases.slotWorldPosition(plotIndex, slotIndex)
+-- The surface a brainrot stands on: the slot pad's top. The plot top is y = 1.2 and the
+-- pad is 0.5 tall centred at y = 1.45, so its top is y = 1.7.
+local SLOT_SURFACE_Y = 1.7
+
+-- Where a brainrot's pivot goes so it stands on its slot pad. The model reports how far
+-- above its own base its pivot sits (BrainrotModel sets StandOffset), so a tall hat or a
+-- small cone both rest on the pad instead of sinking or floating.
+function Bases.slotWorldPosition(plotIndex, slotIndex, model)
 	local config = Store.Config.World
 	local center = config.plotCenters[plotIndex]
 	local offset = config.slotOffsets[slotIndex]
 	if not center or not offset then
 		return nil
 	end
-	return center + offset + Vector3.new(0, 3.4, 0)
+	local stand = 1.7
+	if model and model:GetAttribute("StandOffset") then
+		stand = model:GetAttribute("StandOffset")
+	end
+	return center + offset + Vector3.new(0, SLOT_SURFACE_Y + stand, 0)
 end
 
 function Bases.slotPad(plotIndex, slotIndex)
@@ -64,9 +73,9 @@ function Bases.placeBrainrot(player, entry)
 		return false, "All slots full"
 	end
 	local slotIndex = #slot.models + 1
-	local position = Bases.slotWorldPosition(record.plotIndex, slotIndex)
 	local model = BrainrotModel.build(entry.def, math.floor(entry.rate + 0.5), entry.mutation)
 	model.Name = entry.def.id
+	local position = Bases.slotWorldPosition(record.plotIndex, slotIndex, model)
 	model:PivotTo(CFrame.new(position))
 	model:SetAttribute("OwnerUserId", player.UserId)
 	model:SetAttribute("BrainrotId", entry.brainrotId)
@@ -110,7 +119,7 @@ function Bases.refreshSlotPads(player)
 	local slot = Store.slots[record.plotIndex]
 	for index, entry in ipairs(slot.models) do
 		entry.slotIndex = index
-		local position = Bases.slotWorldPosition(record.plotIndex, index)
+		local position = Bases.slotWorldPosition(record.plotIndex, index, entry.model)
 		if position and entry.model then
 			entry.model:PivotTo(CFrame.new(position))
 		end

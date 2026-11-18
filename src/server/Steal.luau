@@ -92,6 +92,8 @@ function Steal.trySteal(thief, plotIndex)
 end
 
 -- Puts a steal prompt on each brainrot a plot holds so the grab is discoverable in 3D.
+-- The model's OwnedUserId attribute is the authority for whose base it is, so a prompt
+-- that outlives a move can never point a thief at the wrong plot.
 function Steal.attachPrompt(model, plotIndex)
 	local root = model:FindFirstChild("Body") or model.PrimaryPart
 	if not root then
@@ -113,23 +115,17 @@ function Steal.wirePrompts()
 		if prompt.Name ~= "StealPrompt" then
 			return
 		end
-		local plotIndex = prompt:GetAttribute("PlotIndex")
+		local model = prompt.Parent and prompt.Parent.Parent
+		local ownerId = model and model:GetAttribute("OwnerUserId")
+		local record = ownerId and Store.recordFromUserId(ownerId) or nil
+		local plotIndex = record and record.plotIndex or prompt:GetAttribute("PlotIndex")
 		if type(plotIndex) ~= "number" then
-			local model = prompt.Parent and prompt.Parent.Parent
-			local ownerId = model and model:GetAttribute("OwnerUserId")
-			if ownerId == nil then
-				return
-			end
-			local record = Store.recordFromUserId(ownerId)
-			if not record or not record.plotIndex then
-				return
-			end
-			plotIndex = record.plotIndex
+			return
 		end
 		local ok, message = Steal.trySteal(player, plotIndex)
 		if ok then
-			local celebrate = remotes()
-			local burst = celebrate and celebrate:FindFirstChild("Celebrate")
+			local folder = remotes()
+			local burst = folder and folder:FindFirstChild("Celebrate")
 			if burst then
 				burst:FireClient(player, { kind = "steal", text = string.format("SWIPED %s", message) })
 			end

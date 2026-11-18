@@ -58,12 +58,12 @@ local function rollMutation()
 	return nil, 1
 end
 
--- The deck's top is conveyorDeckY + 0.3; the Body sphere's centre goes 1.7 above it.
-local CONVEYOR_STAND_Y = 2
+-- The conveyor deck's top; every runway brainrot stands on it.
+local CONVEYOR_SURFACE_Y = Config.World.conveyorDeckY + 0.3
 
 local function placeOnConveyor(entry)
 	local model = entry.model
-	model:PivotTo(CFrame.new(0, Config.World.conveyorDeckY + CONVEYOR_STAND_Y, entry.z))
+	BrainrotModel.placeOn(model, 0, CONVEYOR_SURFACE_Y, entry.z)
 end
 
 local function spawnOne()
@@ -276,11 +276,7 @@ function Spawner.start(world)
 			entry.z += Config.Conveyor.speed * dt
 			if entry.model and entry.model.PrimaryPart then
 				local bob = math.sin(os.clock() * 3 + entry.brainrotId) * 0.12
-				entry.model:PivotTo(CFrame.new(
-					math.sin(entry.z * 0.1) * 3,
-					Config.World.conveyorDeckY + 2 + bob,
-					entry.z
-				))
+				BrainrotModel.placeOn(entry.model, math.sin(entry.z * 0.1) * 3, CONVEYOR_SURFACE_Y + bob, entry.z)
 			end
 			if entry.z > endZ then
 				despawn(entry)
@@ -289,5 +285,5 @@ function Spawner.start(world)
 	end)
 end
 
--- Runs one immediate spawn on behalf of any player (used by the shop's fallback).
+-- Runs one immediate spawn (kept as the runway's single spawn entry point).
 return Spawner
