@@ -20,13 +20,16 @@ Config.World = {
 	},
 	plotHalfWidth = 17,
 	plotHalfDepth = 13,
+	-- Six pads per plot in a 3x2 grid, so a base fills up quickly and reads as busy.
 	slotOffsets = {
-		Vector3.new(-7, 0, -5.5),
-		Vector3.new(7, 0, -5.5),
-		Vector3.new(-7, 0, 5.5),
-		Vector3.new(7, 0, 5.5),
+		Vector3.new(-11, 0, -6),
+		Vector3.new(0, 0, -6),
+		Vector3.new(11, 0, -6),
+		Vector3.new(-11, 0, 6),
+		Vector3.new(0, 0, 6),
+		Vector3.new(11, 0, 6),
 	},
-	slotPadSize = Vector3.new(9, 0.5, 9),
+	slotPadSize = Vector3.new(8, 0.5, 8),
 	labelStudsOffset = Vector3.new(0, 3.4, 0),
 }
 
