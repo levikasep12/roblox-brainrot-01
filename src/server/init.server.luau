@@ -65,12 +65,26 @@ local function onCharacter(player, character)
 		humanoid.WalkSpeed = 22
 		humanoid.JumpPower = 54
 	end
-	-- A character's pivot is its HumanoidRootPart: stand it clear of the spawn pad. The part
-	-- can lag the CharacterAdded signal by a frame, so wait briefly rather than error.
+	-- Never teleport the character: it spawns on the invisible SpawnLocation and drops onto
+	-- the pad. The root can lag CharacterAdded by a frame, so wait briefly rather than error.
 	local root = character:WaitForChild("HumanoidRootPart", 5)
-	if root then
-		character:PivotTo(CFrame.new(Config.World.spawnPosition.X, 4, Config.World.spawnPosition.Z))
+	if not root then
+		return
 	end
+
+	-- Fall safety net: if the character ever leaves the map (any cause), put it back above the
+	-- pad instead of letting it fall forever. Ends when the character is gone.
+	task.spawn(function()
+		while character.Parent do
+			task.wait(0.5)
+			if not root.Parent then
+				break
+			end
+			if root.Position.Y < -20 then
+				character:PivotTo(CFrame.new(Config.World.spawnPosition.X, 2, Config.World.spawnPosition.Z))
+			end
+		end
+	end)
 end
 
 local function onPlayerAdded(player)

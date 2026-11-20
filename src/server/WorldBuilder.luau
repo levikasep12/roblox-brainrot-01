@@ -576,16 +576,36 @@ function WorldBuilder.build()
 	buildEntranceArches(world)
 	buildPlanters(world)
 
-	local spawn = Instance.new("SpawnLocation")
-	spawn.Name = "PlayerSpawn"
-	spawn.Size = Vector3.new(14, 1, 14)
-	-- Sit the pad's top just above the plaza so a spawning character lands on it, not inside it.
-	spawn.Position = Vector3.new(Config.World.spawnPosition.X, 0.5, Config.World.spawnPosition.Z)
-	spawn.Anchored = true
-	spawn.Color = Color3.fromRGB(96, 200, 255)
-	spawn.Material = Enum.Material.Neon
-	spawn.TopSurface = Enum.SurfaceType.Smooth
-	spawn.Parent = world
+	-- Visible decorative pad: the ground a spawning character stands on, so the spawn reads
+	-- in screenshots. It is a plain part, not the SpawnLocation itself.
+	local spawnX = Config.World.spawnPosition.X
+	local spawnY = Config.World.spawnPosition.Y
+	local spawnZ = Config.World.spawnPosition.Z
+	local spawnPad = part({
+		name = "SpawnPad",
+		size = Vector3.new(14, 1, 14),
+		position = Vector3.new(spawnX, 0.5, spawnZ),
+		color = Color3.fromRGB(96, 200, 255),
+		material = Enum.Material.Neon,
+	})
+	spawnPad.Parent = world
+
+	-- The real spawn point is invisible and non-colliding, parented straight to workspace so
+	-- it is never buried in a folder, and guarded so a rebuild cannot duplicate it. Characters
+	-- spawn above it and drop onto the pad below: no pivot, no teleport.
+	local existingSpawn = workspace:FindFirstChildOfClass("SpawnLocation")
+	if not existingSpawn then
+		local spawn = Instance.new("SpawnLocation")
+		spawn.Name = "PlayerSpawn"
+		spawn.Size = Vector3.new(14, 1, 14)
+		spawn.Position = Vector3.new(spawnX, spawnY - 2, spawnZ)
+		spawn.Anchored = true
+		spawn.Transparency = 1
+		spawn.CanCollide = false
+		spawn.Neutral = true
+		spawn.Duration = 0
+		spawn.Parent = workspace
+	end
 
 	world.Parent = workspace
 	return world, plotParts
