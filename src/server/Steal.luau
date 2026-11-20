@@ -1,5 +1,6 @@
 -- Stealing: a player can grab a brainrot off another player's base unless that base
 -- is locked. Base locks are bought in Bases.toggleLock; this module only reads them.
+-- A stolen brainrot lands on the thief's own free slot at the same rate and mutation.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ProximityPromptService = game:GetService("ProximityPromptService")

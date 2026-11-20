@@ -1,1 +1,24 @@
-{"tour": 1, "steps": [{"screenshot": "01-cover-x2-cucumber.jpg", "keys": ["W"], "wait_ms": 1200}, {"screenshot": "02-golden-flamingo-buy.jpg", "keys": ["E"], "wait_ms": 1000}, {"screenshot": "03-steal-durian-dj.jpg", "keys": ["W", "E"], "wait_ms": 1500}, {"screenshot": "04-wave-sweeping.jpg", "wait_ms": 1000}]}
+{
+  "tour": 1,
+  "steps": [
+    {
+      "screenshot": "01-cover-x2-cucumber.jpg",
+      "keys": ["W"],
+      "wait_ms": 900
+    },
+    {
+      "screenshot": "02-golden-flamingo-buy.jpg",
+      "keys": ["E"],
+      "wait_ms": 700
+    },
+    {
+      "screenshot": "03-steal-durian-dj.jpg",
+      "keys": ["W", "E"],
+      "wait_ms": 1200
+    },
+    {
+      "screenshot": "04-wave-sweeping.jpg",
+      "wait_ms": 1000
+    }
+  ]
+}

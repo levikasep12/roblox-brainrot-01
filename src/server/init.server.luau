@@ -1,5 +1,6 @@
 -- Server entrypoint: builds the world once, then wires the remotes and player
--- lifecycle to the modules (Economy, Bases, Spawner, Steal, Events).
+-- lifecycle to the modules (Economy, Bases, Spawner, Steal, Events). Bases.onPlayerJoin
+-- also grants the free starter brainrot, so a fresh base is earning from second one.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

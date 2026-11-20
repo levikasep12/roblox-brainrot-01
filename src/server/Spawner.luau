@@ -1,5 +1,7 @@
 -- The runway: rolls a brainrot, builds its model, walks it across the conveyor and
 -- lets a nearby player grab it with a proximity prompt. Mutations roll here too.
+-- The first few spawns are forced cheap Commons so a brand new player's first grab
+-- is always affordable, then the normal rarity weights take over.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ProximityPromptService = game:GetService("ProximityPromptService")
@@ -66,8 +68,8 @@ local function placeOnConveyor(entry)
 	BrainrotModel.placeOn(model, 0, CONVEYOR_SURFACE_Y, entry.z)
 end
 
-local function spawnOne()
-	local def = weightedDef()
+local function spawnOne(defOverride)
+	local def = defOverride or weightedDef()
 	local mutation, rateMultiplier = rollMutation()
 	local brainrotId = Store.nextBrainrotId()
 	local rate = def.rate * rateMultiplier
@@ -242,8 +244,12 @@ function Spawner.start(world)
 
 	wirePrompts()
 
+	-- Seed the belt with the six cheapest brainrots, so every opening grab is affordable
+	-- for a new player; the normal rarity weights resume as each one is bought.
+	local sorted = BrainrotDefs.sortedByPrice()
 	for i = 1, Config.Conveyor.npcCount do
-		local entry = spawnOne()
+		local seed = sorted[math.min(i, #sorted)]
+		local entry = spawnOne(seed)
 		entry.z = Config.World.conveyorStartZ + i * Config.Conveyor.spacing
 		placeOnConveyor(entry)
 	end

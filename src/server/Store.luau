@@ -1,5 +1,6 @@
 -- The one place server state lives. Every module reads and writes player data and
--- configuration through this Store; nothing else keeps a second copy.
+-- configuration through this Store; nothing else keeps a second copy. It also exposes
+-- the shared Config/Defs tables and the plot-slot helpers the other modules share.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

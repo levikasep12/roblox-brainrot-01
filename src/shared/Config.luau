@@ -1,3 +1,6 @@
+-- Shared tuning. The early loop is deliberately generous: a new player gets a free
+-- starter brainrot on their plot and enough cash to grab a second within seconds, while
+-- the late rebirth/Mythic prices keep the long climb intact.
 local Config = {}
 
 Config.World = {
@@ -28,17 +31,18 @@ Config.World = {
 }
 
 Config.Conveyor = {
-	npcCount = 5,
-	speed = 3.4,
-	spacing = 13,
-	respawnDelay = 1.4,
+	npcCount = 6,
+	speed = 2.6,
+	spacing = 12,
+	respawnDelay = 0.8,
 	buyDistance = 34,
+	starterGrant = true,
 }
 
 Config.Economy = {
-	startingMoney = 60,
+	startingMoney = 120,
 	incomeTickSeconds = 1,
-	rebirthBaseCost = 1200,
+	rebirthBaseCost = 1500,
 	rebirthCostGrowth = 3.4,
 	rebirthBonus = 0.75,
 	lockCost = 300,
@@ -48,7 +52,7 @@ Config.Economy = {
 }
 
 Config.Wave = {
-	firstCalmSeconds = 22,
+	firstCalmSeconds = 30,
 	calmSeconds = 26,
 	warningSeconds = 12,
 	sweepSeconds = 10,

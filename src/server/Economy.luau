@@ -1,5 +1,6 @@
 -- Income ticking and the rebirth ladder. Reads and writes money only through Store,
--- so the HUD, shop and rebirth all agree on one number.
+-- so the HUD, shop and rebirth all agree on one number. With a free starter brainrot
+-- already on the plot, income begins ticking the moment a player joins.
 
 local Players = game:GetService("Players")
 

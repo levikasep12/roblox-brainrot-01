@@ -55,6 +55,10 @@ local function applyState(state)
 	-- Show the income the player is actually earning, so the number doubles during x2.
 	local shownIncome = state.incomeDouble and state.income * 2 or state.income
 	HUD.setIncome(hud, shownIncome, state.multiplier, state.rebirths, state.incomeDouble)
+	if state.plot then
+		HUD.setSlots(hud, state.plot.usedSlots, state.plot.slots)
+	end
+	HUD.setNextTier(hud, state.money, BrainrotDefs.nextAfterPrice(state.money))
 	renderBanner(state)
 
 	if state.plot then
@@ -178,6 +182,52 @@ task.spawn(function()
 	while true do
 		task.wait(0.2)
 		updateHighlight()
+	end
+end)
+
+-- Label culling: only the nearest handful of brainrot labels stay enabled, so a crowded
+-- base never stacks a wall of BillboardGuis. Labels beyond range are switched off too, so
+-- one that was hidden near a crowd is restored once it is the closest again.
+local MAX_VISIBLE_LABELS = 8
+local LABEL_RANGE = 95
+
+local function cullLabels()
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return
+	end
+	local arena = workspace:FindFirstChild("Arena")
+	if not arena then
+		return
+	end
+	local candidates = {}
+	for _, model in ipairs(arena:GetChildren()) do
+		if model:IsA("Model") then
+			local label = model:FindFirstChild("InfoLabel")
+			local body = model.PrimaryPart
+			if label and body then
+				local distance = (body.Position - root.Position).Magnitude
+				if distance <= LABEL_RANGE then
+					table.insert(candidates, { label = label, distance = distance })
+				else
+					label.Enabled = false
+				end
+			end
+		end
+	end
+	table.sort(candidates, function(a, b)
+		return a.distance < b.distance
+	end)
+	for index, item in ipairs(candidates) do
+		item.label.Enabled = index <= MAX_VISIBLE_LABELS
+	end
+end
+
+task.spawn(function()
+	while true do
+		task.wait(0.35)
+		cullLabels()
 	end
 end)
 

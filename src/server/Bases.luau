@@ -1,5 +1,6 @@
--- Owns the six plots: claiming one on join, placing a bought brainrot on a free slot,
--- the base lock that stops stealing, and rebuilding the slot props on demand.
+-- Owns the six plots: claiming one on join, granting the free starter brainrot so a
+-- fresh base is never empty, placing a bought brainrot on a free slot, the base lock
+-- that stops stealing, and rebuilding the slot props on demand.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -43,7 +44,8 @@ function Bases.slotPad(plotIndex, slotIndex)
 	return entry.slots[slotIndex]
 end
 
--- Claims a plot on join and paints both faces of its sign with the owner's name.
+-- Claims a plot on join, hands over the free starter brainrot so the base is populated
+-- (and earning) from the first second, then paints the sign with the owner's name.
 function Bases.onPlayerJoin(player)
 	local index = Store.claimPlot(player)
 	if index == nil then
@@ -59,6 +61,15 @@ function Bases.onPlayerJoin(player)
 				end
 			end
 		end
+	end
+	if Store.Config.Conveyor.starterGrant and #Store.ownedBrainrots(player) == 0 then
+		local starter = Store.Defs.starter()
+		Bases.placeBrainrot(player, {
+			brainrotId = Store.nextBrainrotId(),
+			def = starter,
+			mutation = nil,
+			rate = starter.rate,
+		})
 	end
 end
 

@@ -1,6 +1,6 @@
--- The client HUD: money and income with tweened ticks, the persistent x2 badge, the
--- small hazard banner, rebirth/lock buttons, the shop panel and toasts. Rendering
--- only: it never changes game state, it asks the server.
+-- The client HUD: a prominent money/income/slots card with a next-tier progress bar,
+-- the persistent x2 badge, the small hazard banner, rebirth/lock buttons, the shop
+-- panel and toasts. Rendering only: it never changes game state, it asks the server.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -84,11 +84,12 @@ function HUD.create(player)
 	root.BackgroundTransparency = 1
 	root.Parent = gui
 
-	-- Top left: the money card with the persistent x2 badge beside the income.
+	-- Top left: the money card. Money and income are the biggest numbers on screen, the
+	-- slot count sits beside the income, and a progress bar tracks the next-tier brainrot.
 	local card = Instance.new("Frame")
 	card.Name = "MoneyCard"
 	card.Position = UDim2.fromOffset(18, 18)
-	card.Size = UDim2.fromOffset(268, 92)
+	card.Size = UDim2.fromOffset(320, 158)
 	card.BackgroundColor3 = COLORS.panel
 	card.BackgroundTransparency = 0.12
 	card.BorderSizePixel = 0
@@ -96,18 +97,22 @@ function HUD.create(player)
 	corner(card, 10)
 	stroke(card, Color3.fromRGB(70, 78, 108))
 
-	local moneyLabel = textLabel(card, "Money", UDim2.new(1, -24, 0, 34), UDim2.fromOffset(14, 8), 28, COLORS.accent)
+	local moneyLabel = textLabel(card, "Money", UDim2.new(1, -24, 0, 40), UDim2.fromOffset(14, 6), 34, COLORS.accent)
 	moneyLabel.Text = "$0"
 
-	local incomeLabel = textLabel(card, "Income", UDim2.new(1, -120, 0, 20), UDim2.fromOffset(15, 46), 14, COLORS.green)
+	local incomeLabel = textLabel(card, "Income", UDim2.new(1, -120, 0, 26), UDim2.fromOffset(15, 48), 20, COLORS.green)
 	incomeLabel.Text = "+$0/s"
 
-	local multLabel = textLabel(card, "Multiplier", UDim2.new(1, -24, 0, 18), UDim2.fromOffset(15, 66), 12, COLORS.muted)
+	local slotsLabel = textLabel(card, "Slots", UDim2.fromOffset(120, 24), UDim2.new(1, -134, 0, 50), 16, COLORS.blue)
+	slotsLabel.TextXAlignment = Enum.TextXAlignment.Right
+	slotsLabel.Text = "0/6 slots"
+
+	local multLabel = textLabel(card, "Multiplier", UDim2.new(1, -24, 0, 18), UDim2.fromOffset(15, 76), 12, COLORS.muted)
 	multLabel.Text = "x1.00 income  |  0 rebirths"
 
 	local x2Badge = Instance.new("Frame")
 	x2Badge.Name = "DoubleBadge"
-	x2Badge.Position = UDim2.fromOffset(196, 44)
+	x2Badge.Position = UDim2.fromOffset(238, 50)
 	x2Badge.Size = UDim2.fromOffset(58, 24)
 	x2Badge.BackgroundColor3 = Color3.fromRGB(58, 34, 84)
 	x2Badge.BorderSizePixel = 0
@@ -118,6 +123,31 @@ function HUD.create(player)
 	local x2Text = textLabel(x2Badge, "Double", UDim2.fromScale(1, 1), UDim2.fromOffset(0, 0), 13, Color3.fromRGB(220, 176, 255))
 	x2Text.TextXAlignment = Enum.TextXAlignment.Center
 	x2Text.Text = "x2"
+
+	-- Next-tier progress: a caption, a track and a fill that grows toward the next price.
+	local nextLabel = textLabel(card, "NextTier", UDim2.new(1, -24, 0, 16), UDim2.fromOffset(15, 100), 11, COLORS.muted)
+	nextLabel.Text = "NEXT TIER"
+
+	local progressTrack = Instance.new("Frame")
+	progressTrack.Name = "ProgressTrack"
+	progressTrack.Position = UDim2.fromOffset(15, 120)
+	progressTrack.Size = UDim2.new(1, -30, 0, 18)
+	progressTrack.BackgroundColor3 = Color3.fromRGB(40, 44, 60)
+	progressTrack.BorderSizePixel = 0
+	progressTrack.Parent = card
+	corner(progressTrack, 9)
+
+	local progressFill = Instance.new("Frame")
+	progressFill.Name = "ProgressFill"
+	progressFill.Size = UDim2.new(0, 0, 1, 0)
+	progressFill.BackgroundColor3 = COLORS.accent
+	progressFill.BorderSizePixel = 0
+	progressFill.Parent = progressTrack
+	corner(progressFill, 9)
+
+	local progressText = textLabel(progressTrack, "ProgressText", UDim2.fromScale(1, 1), UDim2.fromOffset(0, 0), 11, COLORS.text)
+	progressText.TextXAlignment = Enum.TextXAlignment.Center
+	progressText.Text = ""
 
 	-- Top center: the small hazard banner. 380x36, text 13.
 	local banner = Instance.new("TextLabel")
@@ -204,8 +234,12 @@ function HUD.create(player)
 		root = root,
 		moneyLabel = moneyLabel,
 		incomeLabel = incomeLabel,
+		slotsLabel = slotsLabel,
 		multLabel = multLabel,
 		x2Badge = x2Badge,
+		nextLabel = nextLabel,
+		progressFill = progressFill,
+		progressText = progressText,
 		banner = banner,
 		rebirthButton = rebirthButton,
 		lockButton = lockButton,
@@ -251,6 +285,28 @@ function HUD.setIncome(hud, perSecond, multiplier, rebirths, doubled)
 	hud.incomeLabel.Text = string.format("+$%d/s", math.floor(perSecond + 0.5))
 	hud.multLabel.Text = string.format("x%.2f income  |  %d rebirths", multiplier, rebirths)
 	hud.x2Badge.Visible = doubled == true
+end
+
+-- "2/6 slots" beside the income, so the base's capacity is always visible.
+function HUD.setSlots(hud, used, total)
+	hud.slotsLabel.Text = string.format("%d/%d slots", used or 0, total or 6)
+end
+
+-- Progress toward the next affordable tier: the bar fills as money approaches its price.
+function HUD.setNextTier(hud, money, def)
+	if not def then
+		hud.nextLabel.Text = "MAX TIER REACHED"
+		hud.progressFill.Size = UDim2.new(1, 0, 1, 0)
+		hud.progressText.Text = "ALL BRAINROTS UNLOCKED"
+		return
+	end
+	local ratio = 0
+	if def.price > 0 then
+		ratio = math.clamp(money / def.price, 0, 1)
+	end
+	hud.nextLabel.Text = string.format("NEXT: %s  ($%d)", def.name, def.price)
+	hud.progressFill.Size = UDim2.new(ratio, 0, 1, 0)
+	hud.progressText.Text = string.format("$%d / $%d  -  %d%%", math.floor(money), def.price, math.floor(ratio * 100))
 end
 
 -- The hazard banner. Warning and sweeping stay up; the cooldown notice is transient.

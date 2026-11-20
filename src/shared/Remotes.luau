@@ -1,5 +1,6 @@
 -- Shared client/server protocol: every RemoteEvent the game uses, created once on
--- the server and looked up (never created) on the client.
+-- the server and looked up (never created) on the client. One table of names is the
+-- whole contract; adding a remote is a one-line change here.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 

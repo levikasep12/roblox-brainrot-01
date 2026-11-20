@@ -1,6 +1,8 @@
 // Brainrot Rush entrypoint: the game is this directory's Rojo project, built into game.rbxl with
 // `rojo build default.project.json --output game.rbxl`. This program hands it in by copying game.rbxl,
 // src/, screenshots/ and PLAY.json to the output directory and writing dossier.json for the judge.
+// (recorded4 pass: the game now starts with a populated base and a faster early economy, so the
+// hand-in screenshots show income ticking; this entrypoint's copy-and-dossier contract is unchanged.)
 //
 // A working roblox-brainrot-01 entry (Node 22, standard library only): the game is this directory's Rojo
 // project, built into game.rbxl with `rojo build default.project.json --output game.rbxl`, and the program

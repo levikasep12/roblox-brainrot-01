@@ -1,6 +1,8 @@
 -- The brainrot cast: every character, its rarity ladder rung, its shop price and
 -- its money-per-second rate. Pure data, shared by server and client so the shop
 -- and the 3D models always agree.
+-- Sixteen characters across five rarities: the first two are priced so a brand
+-- new player can buy one within seconds, while the Mythic rung stays a long climb.
 
 local BrainrotDefs = {}
 
@@ -15,12 +17,13 @@ BrainrotDefs.RarityColors = {
 }
 
 -- rate = money per second at one plot slot; price = shop cost in dollars.
+-- The ladder is deliberately steep after the first rung: cheap starters, costly Mythics.
 BrainrotDefs.Cast = {
 	{
 		id = "capybara_chef",
 		name = "Capybara Chef",
 		rarity = "Common",
-		price = 50,
+		price = 25,
 		rate = 1,
 		shape = "round",
 		prop = "chefhat",
@@ -31,7 +34,7 @@ BrainrotDefs.Cast = {
 		id = "toaster_prophet",
 		name = "Toaster Prophet",
 		rarity = "Common",
-		price = 110,
+		price = 60,
 		rate = 3,
 		shape = "box",
 		prop = "antenna",
@@ -39,11 +42,33 @@ BrainrotDefs.Cast = {
 		accentColor = Color3.fromRGB(255, 96, 70),
 	},
 	{
+		id = "sentient_sock",
+		name = "Sentient Sock",
+		rarity = "Common",
+		price = 120,
+		rate = 5,
+		shape = "box",
+		prop = "stripes",
+		bodyColor = Color3.fromRGB(238, 238, 242),
+		accentColor = Color3.fromRGB(96, 132, 220),
+	},
+	{
+		id = "drama_llama",
+		name = "Drama Llama",
+		rarity = "Common",
+		price = 200,
+		rate = 8,
+		shape = "round",
+		prop = "scarf",
+		bodyColor = Color3.fromRGB(226, 196, 150),
+		accentColor = Color3.fromRGB(228, 68, 96),
+	},
+	{
 		id = "durian_dj",
 		name = "Durian DJ",
 		rarity = "Rare",
-		price = 260,
-		rate = 6,
+		price = 340,
+		rate = 13,
 		shape = "round",
 		prop = "headphones",
 		bodyColor = Color3.fromRGB(150, 178, 66),
@@ -53,8 +78,8 @@ BrainrotDefs.Cast = {
 		id = "pigeon_landlord",
 		name = "Pigeon Landlord",
 		rarity = "Rare",
-		price = 480,
-		rate = 9,
+		price = 560,
+		rate = 20,
 		shape = "round",
 		prop = "tophat",
 		bodyColor = Color3.fromRGB(132, 144, 166),
@@ -64,8 +89,8 @@ BrainrotDefs.Cast = {
 		id = "sloth_barista",
 		name = "Sloth Barista",
 		rarity = "Rare",
-		price = 760,
-		rate = 13,
+		price = 900,
+		rate = 30,
 		shape = "round",
 		prop = "cup",
 		bodyColor = Color3.fromRGB(146, 122, 100),
@@ -75,8 +100,8 @@ BrainrotDefs.Cast = {
 		id = "moth_accountant",
 		name = "Moth Accountant",
 		rarity = "Epic",
-		price = 1200,
-		rate = 24,
+		price = 1500,
+		rate = 48,
 		shape = "round",
 		prop = "wings",
 		bodyColor = Color3.fromRGB(214, 198, 150),
@@ -86,8 +111,8 @@ BrainrotDefs.Cast = {
 		id = "croissant_sensei",
 		name = "Croissant Sensei",
 		rarity = "Epic",
-		price = 1900,
-		rate = 38,
+		price = 2400,
+		rate = 72,
 		shape = "round",
 		prop = "headband",
 		bodyColor = Color3.fromRGB(226, 168, 88),
@@ -97,8 +122,8 @@ BrainrotDefs.Cast = {
 		id = "tax_goose",
 		name = "Tax Evasion Goose",
 		rarity = "Epic",
-		price = 3000,
-		rate = 58,
+		price = 3800,
+		rate = 110,
 		shape = "round",
 		prop = "briefcase",
 		bodyColor = Color3.fromRGB(246, 246, 238),
@@ -108,8 +133,8 @@ BrainrotDefs.Cast = {
 		id = "flamingo_voidwalker",
 		name = "Flamingo Voidwalker",
 		rarity = "Legendary",
-		price = 5200,
-		rate = 95,
+		price = 6200,
+		rate = 175,
 		shape = "round",
 		prop = "halo",
 		bodyColor = Color3.fromRGB(255, 122, 172),
@@ -119,19 +144,30 @@ BrainrotDefs.Cast = {
 		id = "cucumber_oracle",
 		name = "Cucumber Oracle",
 		rarity = "Legendary",
-		price = 8500,
-		rate = 150,
+		price = 9800,
+		rate = 260,
 		shape = "box",
 		prop = "crown",
 		bodyColor = Color3.fromRGB(94, 176, 96),
 		accentColor = Color3.fromRGB(255, 214, 64),
 	},
 	{
+		id = "skibidi_pope",
+		name = "Skibidi Toilet Pope",
+		rarity = "Legendary",
+		price = 15000,
+		rate = 390,
+		shape = "box",
+		prop = "mitre",
+		bodyColor = Color3.fromRGB(240, 240, 246),
+		accentColor = Color3.fromRGB(255, 210, 84),
+	},
+	{
 		id = "disco_walrus",
 		name = "Disco Walrus Prime",
 		rarity = "Mythic",
-		price = 15000,
-		rate = 260,
+		price = 24000,
+		rate = 600,
 		shape = "round",
 		prop = "disco",
 		bodyColor = Color3.fromRGB(122, 132, 168),
@@ -141,12 +177,23 @@ BrainrotDefs.Cast = {
 		id = "traffic_cone_sage",
 		name = "Sentient Traffic Cone",
 		rarity = "Mythic",
-		price = 26000,
-		rate = 420,
+		price = 38000,
+		rate = 920,
 		shape = "cone",
 		prop = "glasses",
 		bodyColor = Color3.fromRGB(255, 124, 42),
 		accentColor = Color3.fromRGB(246, 246, 246),
+	},
+	{
+		id = "ohio_final_boss",
+		name = "Ohio Final Boss",
+		rarity = "Mythic",
+		price = 60000,
+		rate = 1400,
+		shape = "cone",
+		prop = "horns",
+		bodyColor = Color3.fromRGB(58, 44, 84),
+		accentColor = Color3.fromRGB(255, 64, 96),
 	},
 }
 
@@ -173,6 +220,11 @@ function BrainrotDefs.nextAfterPrice(budget)
 		end
 	end
 	return sorted[#sorted]
+end
+
+-- The cheapest brainrot on the ladder: the free starter a new player receives.
+function BrainrotDefs.starter()
+	return BrainrotDefs.sortedByPrice()[1]
 end
 
 function BrainrotDefs.rarityRank(rarity)

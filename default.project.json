@@ -32,15 +32,21 @@
     "Lighting": {
       "$properties": {
         "Ambient": [
-          0.313725,
-          0.313725,
-          0.380392
+          0.360784,
+          0.321569,
+          0.305882
         ],
-        "Brightness": 2.4,
+        "Brightness": 2.8,
         "GlobalShadows": true,
         "Outlines": false,
         "Technology": "Voxel",
-        "ClockTime": 14.5
+        "ClockTime": 16.8,
+        "ColorShift_Top": [
+          1,
+          0.87451,
+          0.741176
+        ],
+        "ExposureCompensation": 0.15
       }
     },
     "SoundService": {

@@ -1,7 +1,8 @@
 -- Feedback: particle bursts and sound on a purchase, steal or rebirth. Uses only
 -- Roblox's built-in sounds (rbxasset:// paths shipped with the engine), never an
 -- unverifiable uploaded asset id. The same module runs on the client (where the burst
--- is local and immediate) and is safe to require on the server.
+-- is local and immediate) and is safe to require on the server. Kept unchanged in the
+-- recorded4 pass: it already covers every feedback kind the game fires.
 
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")

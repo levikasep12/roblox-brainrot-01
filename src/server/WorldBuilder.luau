@@ -1,7 +1,7 @@
 -- Builds the whole 3D world from parts at server start: the baseplate, the central
 -- conveyor runway brainrots walk along, the six player plots with their slots, the
--- shop counter and small decorations. Returns the folder plus the plot and slot parts
--- other modules need.
+-- shop counter, a giant brainrot statue centerpiece, entrance arches, planters, lamps
+-- and signs. Returns the folder plus the plot and slot parts other modules need.
 
 local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
 
@@ -185,12 +185,21 @@ local function buildPlots(world)
 	plots.Parent = world
 
 	local plotParts = {}
+	-- Six distinct tints so each base reads as its own place in a wide shot.
+	local plotColors = {
+		Color3.fromRGB(74, 82, 118),
+		Color3.fromRGB(92, 78, 116),
+		Color3.fromRGB(70, 96, 112),
+		Color3.fromRGB(108, 84, 96),
+		Color3.fromRGB(78, 104, 92),
+		Color3.fromRGB(100, 92, 120),
+	}
 	for index, center in ipairs(Config.World.plotCenters) do
 		local plot = part({
 			name = "Plot" .. index,
 			size = Vector3.new(Config.World.plotHalfWidth * 2, 1.2, Config.World.plotHalfDepth * 2),
 			position = center + Vector3.new(0, 0.6, 0),
-			color = index % 2 == 0 and Color3.fromRGB(74, 82, 118) or Color3.fromRGB(86, 96, 136),
+			color = plotColors[index] or Color3.fromRGB(86, 96, 136),
 			material = Enum.Material.Slate,
 		})
 		plot.Parent = plots
@@ -403,6 +412,149 @@ local function buildDecor(world)
 	end
 end
 
+-- A giant brainrot statue on a pedestal off the plaza's east side: the landmark every wide
+-- screenshot frames. Built from the same primitive parts as the cast, clear of the conveyor.
+local function buildCenterpiece(world)
+	local decor = world:FindFirstChild("Decor") or world
+	local baseX, baseZ = 118, 6
+
+	local pedestal = part({
+		name = "StatuePedestal",
+		size = Vector3.new(26, 6, 26),
+		position = Vector3.new(baseX, 3, baseZ),
+		color = Color3.fromRGB(60, 64, 82),
+		material = Enum.Material.Marble,
+	})
+	pedestal.Parent = decor
+
+	local plaque = part({
+		name = "StatuePlaque",
+		size = Vector3.new(20, 3, 1),
+		position = Vector3.new(baseX, 3, baseZ - 13.5),
+		color = Color3.fromRGB(24, 26, 36),
+		material = Enum.Material.SmoothPlastic,
+		collide = false,
+	})
+	plaque.Parent = decor
+	labelPart(plaque, "THE FIRST BRAINROT", Color3.fromRGB(255, 214, 92))
+
+	local head = part({
+		name = "StatueHead",
+		size = Vector3.new(16, 16, 16),
+		position = Vector3.new(baseX, 14, baseZ),
+		color = Color3.fromRGB(255, 196, 48),
+		material = Enum.Material.Neon,
+		collide = false,
+	})
+	head.Shape = Enum.PartType.Ball
+	head.Parent = decor
+
+	for _, side in ipairs({ -1, 1 }) do
+		local eye = part({
+			name = "StatueEye",
+			size = Vector3.new(3.4, 4, 1.4),
+			position = Vector3.new(baseX + side * 4, 16, baseZ - 7.2),
+			color = Color3.fromRGB(250, 250, 250),
+			material = Enum.Material.SmoothPlastic,
+			collide = false,
+		})
+		eye.Parent = decor
+		local pupil = part({
+			name = "StatuePupil",
+			size = Vector3.new(1.6, 2, 0.8),
+			position = Vector3.new(baseX + side * 4, 16, baseZ - 8.1),
+			color = Color3.fromRGB(24, 24, 32),
+			material = Enum.Material.SmoothPlastic,
+			collide = false,
+		})
+		pupil.Parent = decor
+	end
+
+	local crown = part({
+		name = "StatueCrown",
+		size = Vector3.new(12, 3, 12),
+		position = Vector3.new(baseX, 23, baseZ),
+		color = Color3.fromRGB(255, 84, 132),
+		material = Enum.Material.Neon,
+		collide = false,
+	})
+	crown.Parent = decor
+	for _, offset in ipairs({ Vector3.new(-4, 25, 0), Vector3.new(4, 25, 0), Vector3.new(0, 25, -4), Vector3.new(0, 25, 4) }) do
+		local spike = part({
+			name = "StatueSpike",
+			size = Vector3.new(2, 4, 2),
+			position = Vector3.new(baseX + offset.X, offset.Y, baseZ + offset.Z),
+			color = Color3.fromRGB(255, 84, 132),
+			material = Enum.Material.Neon,
+			collide = false,
+		})
+		spike.Parent = decor
+	end
+end
+
+-- Two entrance arches framing the runway approach, so the spawn side reads as a gateway.
+local function buildEntranceArches(world)
+	local decor = world:FindFirstChild("Decor") or world
+	for _, z in ipairs({ -62, 62 }) do
+		for _, side in ipairs({ -1, 1 }) do
+			local pillar = part({
+				name = "ArchPillar",
+				size = Vector3.new(2.4, 20, 2.4),
+				position = Vector3.new(side * 22, 10, z),
+				color = Color3.fromRGB(70, 76, 96),
+				material = Enum.Material.Metal,
+			})
+			pillar.Parent = decor
+			local lightStrip = part({
+				name = "ArchLight",
+				size = Vector3.new(0.6, 18, 0.6),
+				position = Vector3.new(side * 21, 10, z + 1.3),
+				color = Color3.fromRGB(120, 220, 255),
+				material = Enum.Material.Neon,
+				collide = false,
+			})
+			lightStrip.Parent = decor
+		end
+		local beam = part({
+			name = "ArchBeam",
+			size = Vector3.new(46, 3, 2.4),
+			position = Vector3.new(0, 21, z),
+			color = Color3.fromRGB(40, 44, 60),
+			material = Enum.Material.SmoothPlastic,
+		})
+		beam.Parent = decor
+		labelPart(beam, "BRAINROT RUSH", Color3.fromRGB(255, 214, 92))
+	end
+end
+
+-- Rounded planters with a shrub at each plot corner, adding green mass to the wide shots.
+local function buildPlanters(world)
+	local decor = world:FindFirstChild("Decor") or world
+	for _, center in ipairs(Config.World.plotCenters) do
+		for _, side in ipairs({ -1, 1 }) do
+			local spot = center + Vector3.new(side * (Config.World.plotHalfWidth - 2), 0, -Config.World.plotHalfDepth + 1)
+			local planter = part({
+				name = "Planter",
+				size = Vector3.new(4, 2, 4),
+				position = spot + Vector3.new(0, 1.6, 0),
+				color = Color3.fromRGB(120, 82, 56),
+				material = Enum.Material.WoodPlanks,
+			})
+			planter.Parent = decor
+			local shrub = part({
+				name = "PlanterShrub",
+				size = Vector3.new(4.4, 4, 4.4),
+				position = spot + Vector3.new(0, 4, 0),
+				color = Color3.fromRGB(72, 160, 96),
+				material = Enum.Material.Leaves,
+				collide = false,
+			})
+			shrub.Shape = Enum.PartType.Ball
+			shrub.Parent = decor
+		end
+	end
+end
+
 -- Builds everything under a Workspace folder named "Arena".
 function WorldBuilder.build()
 	local existing = workspace:FindFirstChild("Arena")
@@ -418,6 +570,9 @@ function WorldBuilder.build()
 	local _, plotParts = buildPlots(world)
 	buildShop(world)
 	buildDecor(world)
+	buildCenterpiece(world)
+	buildEntranceArches(world)
+	buildPlanters(world)
 
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "PlayerSpawn"

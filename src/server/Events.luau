@@ -1,6 +1,7 @@
 -- The hazard wave: a calm -> warning -> sweeping -> double-income cycle. The sweep
 -- is a real wall that crosses the map; anyone not standing on their own plot when it
 -- passes loses a share of their money. The x2 income window follows it.
+-- The first calm is longer so a new player can fill a few slots before the first wave.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")

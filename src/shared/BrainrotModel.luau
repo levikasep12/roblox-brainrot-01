@@ -185,6 +185,46 @@ local function buildGlasses(model, def, topY)
 	bar.Parent = model
 end
 
+-- Three horizontal bands around a boxy body: the Sentient Sock's knit stripes.
+local function buildStripes(model, def, topY)
+	for index = 1, 3 do
+		local band = newPart("Stripe", Vector3.new(3.5, 0.4, 3.5), def.accentColor)
+		band.Position = Vector3.new(0, topY - 3.2 + index * 0.9, 0)
+		band.Parent = model
+	end
+end
+
+-- A wrapped scarf: a wide collar ring plus one hanging tail.
+local function buildScarf(model, def, topY)
+	local collar = newPart("ScarfCollar", Vector3.new(2.9, 0.7, 2.9), def.accentColor)
+	collar.Position = Vector3.new(0, topY - 1.1, 0)
+	collar.Parent = model
+	local tail = newPart("ScarfTail", Vector3.new(0.7, 1.8, 0.4), def.accentColor)
+	tail.Position = Vector3.new(0.9, topY - 2.2, 1.4)
+	tail.Parent = model
+end
+
+-- A tall papal mitre: a tapered band plus a pointed gold cap.
+local function buildMitre(model, def, topY)
+	local band = newPart("MitreBand", Vector3.new(2.2, 0.7, 2.2), def.accentColor)
+	band.Position = Vector3.new(0, topY + 0.4, 0)
+	band.Parent = model
+	local peak = newPart("MitrePeak", Vector3.new(1.6, 2.0, 1.6), def.accentColor)
+	peak.Material = Enum.Material.Neon
+	peak.Position = Vector3.new(0, topY + 1.7, 0)
+	peak.Parent = model
+end
+
+-- A pair of curved demon horns for the final boss silhouette.
+local function buildHorns(model, def, topY)
+	for _, side in ipairs({ -1, 1 }) do
+		local horn = newPart("Horn", Vector3.new(0.5, 1.8, 0.5), def.accentColor)
+		horn.Material = Enum.Material.Neon
+		horn.CFrame = CFrame.new(side * 1.1, topY + 1.0, 0) * CFrame.Angles(0, 0, math.rad(side * 28))
+		horn.Parent = model
+	end
+end
+
 local propBuilders = {
 	chefhat = buildChefHat,
 	antenna = buildAntenna,
@@ -198,18 +238,23 @@ local propBuilders = {
 	crown = buildCrown,
 	disco = buildDisco,
 	glasses = buildGlasses,
+	stripes = buildStripes,
+	scarf = buildScarf,
+	mitre = buildMitre,
+	horns = buildHorns,
 }
 
--- A small name / rarity / income label, about 150x46, that hides behind nearer ones instead of
--- stacking through them (AlwaysOnTop = false).
+-- A small name / rarity / income label, about 130x38, that hides behind nearer ones instead of
+-- stacking through them (AlwaysOnTop = false). MaxDistance is deliberately short so a crowded
+-- base never fills the screen with labels; the client also caps how many are visible at once.
 function BrainrotModel.buildLabel(def, ratePerSecond, mutation)
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = "InfoLabel"
-	billboard.Size = UDim2.fromOffset(150, 46)
-	billboard.StudsOffset = Vector3.new(0, 7.4, 0)
+	billboard.Size = UDim2.fromOffset(130, 38)
+	billboard.StudsOffset = Vector3.new(0, 6.2, 0)
 	billboard.AlwaysOnTop = false
 	billboard.LightInfluence = 1
-	billboard.MaxDistance = 160
+	billboard.MaxDistance = 110
 	billboard.Adornee = nil
 
 	local frame = Instance.new("Frame")
@@ -233,11 +278,11 @@ function BrainrotModel.buildLabel(def, ratePerSecond, mutation)
 
 	local nameLabel = Instance.new("TextLabel")
 	nameLabel.Name = "Name"
-	nameLabel.Position = UDim2.fromOffset(10, 3)
-	nameLabel.Size = UDim2.new(1, -14, 0, 18)
+	nameLabel.Position = UDim2.fromOffset(9, 2)
+	nameLabel.Size = UDim2.new(1, -12, 0, 16)
 	nameLabel.BackgroundTransparency = 1
 	nameLabel.Font = Enum.Font.GothamBold
-	nameLabel.TextSize = 13
+	nameLabel.TextSize = 12
 	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
 	nameLabel.TextColor3 = Color3.fromRGB(245, 245, 250)
@@ -246,11 +291,11 @@ function BrainrotModel.buildLabel(def, ratePerSecond, mutation)
 
 	local subLabel = Instance.new("TextLabel")
 	subLabel.Name = "Detail"
-	subLabel.Position = UDim2.fromOffset(10, 22)
-	subLabel.Size = UDim2.new(1, -14, 0, 18)
+	subLabel.Position = UDim2.fromOffset(9, 19)
+	subLabel.Size = UDim2.new(1, -12, 0, 15)
 	subLabel.BackgroundTransparency = 1
 	subLabel.Font = Enum.Font.GothamMedium
-	subLabel.TextSize = 12
+	subLabel.TextSize = 11
 	subLabel.TextXAlignment = Enum.TextXAlignment.Left
 	subLabel.TextColor3 = BrainrotDefs.RarityColors[def.rarity] or Color3.new(1, 1, 1)
 	subLabel.Text = string.format("%s  $%d/s", def.rarity, ratePerSecond)
