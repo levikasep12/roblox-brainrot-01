@@ -100,37 +100,37 @@ function HUD.create(player)
 	local moneyLabel = textLabel(card, "Money", UDim2.new(1, -24, 0, 40), UDim2.fromOffset(14, 6), 34, COLORS.accent)
 	moneyLabel.Text = "$0"
 
-	local incomeLabel = textLabel(card, "Income", UDim2.new(1, -120, 0, 26), UDim2.fromOffset(15, 48), 20, COLORS.green)
+	local incomeLabel = textLabel(card, "Income", UDim2.fromOffset(132, 26), UDim2.fromOffset(15, 48), 20, COLORS.green)
 	incomeLabel.Text = "+$0/s"
 
-	local slotsLabel = textLabel(card, "Slots", UDim2.fromOffset(120, 24), UDim2.new(1, -134, 0, 50), 16, COLORS.blue)
+	local slotsLabel = textLabel(card, "Slots", UDim2.fromOffset(130, 24), UDim2.new(1, -142, 0, 50), 16, COLORS.blue)
 	slotsLabel.TextXAlignment = Enum.TextXAlignment.Right
 	slotsLabel.Text = "0/6 slots"
 
-	local multLabel = textLabel(card, "Multiplier", UDim2.new(1, -24, 0, 18), UDim2.fromOffset(15, 76), 12, COLORS.muted)
+	local multLabel = textLabel(card, "Multiplier", UDim2.new(1, -96, 0, 18), UDim2.fromOffset(15, 78), 12, COLORS.muted)
 	multLabel.Text = "x1.00 income  |  0 rebirths"
 
 	local x2Badge = Instance.new("Frame")
 	x2Badge.Name = "DoubleBadge"
-	x2Badge.Position = UDim2.fromOffset(238, 50)
-	x2Badge.Size = UDim2.fromOffset(58, 24)
+	x2Badge.Position = UDim2.fromOffset(244, 76)
+	x2Badge.Size = UDim2.fromOffset(58, 20)
 	x2Badge.BackgroundColor3 = Color3.fromRGB(58, 34, 84)
 	x2Badge.BorderSizePixel = 0
 	x2Badge.Visible = false
 	x2Badge.Parent = card
-	corner(x2Badge, 12)
+	corner(x2Badge, 10)
 	stroke(x2Badge, Color3.fromRGB(190, 130, 255), 1.5)
-	local x2Text = textLabel(x2Badge, "Double", UDim2.fromScale(1, 1), UDim2.fromOffset(0, 0), 13, Color3.fromRGB(220, 176, 255))
+	local x2Text = textLabel(x2Badge, "Double", UDim2.fromScale(1, 1), UDim2.fromOffset(0, 0), 12, Color3.fromRGB(220, 176, 255))
 	x2Text.TextXAlignment = Enum.TextXAlignment.Center
 	x2Text.Text = "x2"
 
 	-- Next-tier progress: a caption, a track and a fill that grows toward the next price.
-	local nextLabel = textLabel(card, "NextTier", UDim2.new(1, -24, 0, 16), UDim2.fromOffset(15, 100), 11, COLORS.muted)
+	local nextLabel = textLabel(card, "NextTier", UDim2.new(1, -24, 0, 16), UDim2.fromOffset(15, 102), 11, COLORS.muted)
 	nextLabel.Text = "NEXT TIER"
 
 	local progressTrack = Instance.new("Frame")
 	progressTrack.Name = "ProgressTrack"
-	progressTrack.Position = UDim2.fromOffset(15, 120)
+	progressTrack.Position = UDim2.fromOffset(15, 122)
 	progressTrack.Size = UDim2.new(1, -30, 0, 18)
 	progressTrack.BackgroundColor3 = Color3.fromRGB(40, 44, 60)
 	progressTrack.BorderSizePixel = 0
