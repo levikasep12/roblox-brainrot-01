@@ -527,12 +527,14 @@ local function buildEntranceArches(world)
 	end
 end
 
--- Rounded planters with a shrub at each plot corner, adding green mass to the wide shots.
+-- Rounded planters with a shrub flanking each plot's back edge, adding green mass to the
+-- wide shots without sitting on any slot pad (they sit just behind the plot, either side
+-- of the owner sign).
 local function buildPlanters(world)
 	local decor = world:FindFirstChild("Decor") or world
 	for _, center in ipairs(Config.World.plotCenters) do
 		for _, side in ipairs({ -1, 1 }) do
-			local spot = center + Vector3.new(side * (Config.World.plotHalfWidth - 2), 0, -Config.World.plotHalfDepth + 1)
+			local spot = center + Vector3.new(side * (Config.World.plotHalfWidth - 2), 0, -Config.World.plotHalfDepth - 1)
 			local planter = part({
 				name = "Planter",
 				size = Vector3.new(4, 2, 4),

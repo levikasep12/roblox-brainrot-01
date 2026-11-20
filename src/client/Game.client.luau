@@ -58,7 +58,14 @@ local function applyState(state)
 	if state.plot then
 		HUD.setSlots(hud, state.plot.usedSlots, state.plot.slots)
 	end
-	HUD.setNextTier(hud, state.money, BrainrotDefs.nextAfterPrice(state.money))
+	-- Progress toward the next brainrot the player cannot yet afford; nil once the top of
+	-- the ladder is affordable, so the bar shows a true "all unlocked" state instead of
+	-- sitting full forever.
+	local target = BrainrotDefs.nextAfterPrice(state.money)
+	if target and state.money >= target.price then
+		target = nil
+	end
+	HUD.setNextTier(hud, state.money, target)
 	renderBanner(state)
 
 	if state.plot then
