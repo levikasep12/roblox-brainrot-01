@@ -349,7 +349,7 @@ local function buildDecor(world)
 			size = Vector3.new(12, 12, 12),
 			position = spot + Vector3.new(0, 15, 0),
 			color = index % 3 == 0 and Color3.fromRGB(70, 156, 96) or Color3.fromRGB(58, 138, 86),
-			material = Enum.Material.Leaves,
+			material = Enum.Material.Grass,
 		})
 		leaves.Parent = decor
 	end
@@ -548,7 +548,7 @@ local function buildPlanters(world)
 				size = Vector3.new(4.4, 4, 4.4),
 				position = spot + Vector3.new(0, 4, 0),
 				color = Color3.fromRGB(72, 160, 96),
-				material = Enum.Material.Leaves,
+				material = Enum.Material.Grass,
 				collide = false,
 			})
 			shrub.Shape = Enum.PartType.Ball
